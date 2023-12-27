@@ -36,13 +36,7 @@
 .vs
 x64
 x32
-hBBr/.vs
-hBBr/x64
-hBBr/x32
-hBBr/Editor/*.txt
-hBBr/RendererCore/*.txt
-hBBr/ARM64/
-hBBr/RendererCore_Android/ARM64/
-hBBr/AndroidProject/app/obj
-hBBr/AndroidProject/app/build
-hBBr/AndroidProject/app/src/main/assets
+Binaries
+Saved
+DerivedDataCache
+Intermediate
