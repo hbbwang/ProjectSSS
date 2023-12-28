@@ -15,6 +15,25 @@ class PROJECTSSS_API ATPCharacterBase : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ATPCharacterBase();
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	FVector2D _speed_beginWalk;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	FVector2D _speed_endWalk;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	float _speed_beginRun;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	float _speed_endRun;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	bool _bRun;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	FVector2D _moveAxis;
+	FVector2D _moveAxisTarget;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component",meta=(AllowPrivateAccess="true"))
 	FVector _socketOffset_Origin;
@@ -38,6 +57,10 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	class UInputAction* _inputMoveLeft;
 	void InputEvent_MoveRightward(const FInputActionValue& value);
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	class UInputAction* _inputRun;
+	void InputEvent_Run(const FInputActionValue& value);
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	class UInputAction* _inputLookAxis2D;
@@ -52,6 +75,8 @@ private:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component",meta=(AllowPrivateAccess="true"))
 	class UCameraComponent* _playerCameraComp;
+
+	class APlayerController* _playerController = nullptr;
 	
 public:	
 	// Called every frame
