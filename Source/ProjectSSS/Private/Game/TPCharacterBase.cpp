@@ -81,6 +81,10 @@ void ATPCharacterBase::InputEvent_Run(const FInputActionValue& value)
 	{
 		_bRun = value.Get<bool>();
 	}
+	else
+	{
+		_bRun = false;
+	}
 }
 
 void ATPCharacterBase::InputEvent_LookAxis2D(const FInputActionValue& value)
