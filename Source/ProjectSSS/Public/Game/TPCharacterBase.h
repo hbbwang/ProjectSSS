@@ -34,8 +34,17 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
 	FVector2D _moveAxis;
 	FVector2D _moveAxisTarget;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	bool _bMoveInputX;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	bool _bMoveInputY;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	float _inputDeltaAngle;
 	
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component",meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component")
 	FVector _socketOffset_Origin;
 	
 protected:

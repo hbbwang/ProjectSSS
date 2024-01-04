@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerInput.h"
 // Sets default values
 ATPCharacterBase::ATPCharacterBase():
@@ -22,10 +23,17 @@ ATPCharacterBase::ATPCharacterBase():
 	_playerCameraSpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("PlayerCameraSpringArm"));
 	_playerCameraSpringArmComp->SetupAttachment(RootComponent);
 	_playerCameraSpringArmComp->bUsePawnControlRotation = true;
+	_playerCameraSpringArmComp->bEnableCameraLag = true;
+	_playerCameraSpringArmComp->bEnableCameraRotationLag = true;
+	_playerCameraSpringArmComp->CameraLagSpeed = 20.0f;
+	_playerCameraSpringArmComp->CameraRotationLagSpeed = 15.0f;
+	_playerCameraSpringArmComp->CameraLagMaxDistance = 50.0f;
 	
 	_playerCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	_playerCameraComp->SetupAttachment(_playerCameraSpringArmComp);
-	
+	bUseControllerRotationYaw = false;
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 void ATPCharacterBase::OnConstruction(const FTransform& Transform)
@@ -61,8 +69,11 @@ void ATPCharacterBase::InputEvent_MoveForward(const FInputActionValue& value)
 	_moveAxisTarget.Y = moveVector;
 	if(moveVector > 0.025f || moveVector < -0.025f )
 	{
-		AddMovementInput( _playerCameraComp->GetForwardVector()*FVector(1,1,0).Normalize(), moveVector);
+		//AddMovementInput( _playerCameraComp->GetForwardVector()*FVector(1,1,0).Normalize(), moveVector);
+		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
+		AddMovementInput( rot.Vector() , moveVector);
 	}
+	_bMoveInputY = !FMath::IsNearlyEqual(moveVector,0.0f,0.01f);
 }
 
 void ATPCharacterBase::InputEvent_MoveRightward(const FInputActionValue& value)
@@ -71,8 +82,11 @@ void ATPCharacterBase::InputEvent_MoveRightward(const FInputActionValue& value)
 	_moveAxisTarget.X = moveVector;
 	if(moveVector > 0.025f || moveVector < -0.025f )
 	{
-		AddMovementInput( _playerCameraComp->GetRightVector()*FVector(1,1,0).Normalize(), moveVector);
+		//AddMovementInput( _playerCameraComp->GetRightVector()*FVector(1,1,0).Normalize(), moveVector);
+		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
+		AddMovementInput( FRotationMatrix(rot).GetScaledAxis(EAxis::Y) , moveVector);
 	}
+	_bMoveInputX = !FMath::IsNearlyEqual(moveVector,0.0f,0.01f);
 }
 
 void ATPCharacterBase::InputEvent_Run(const FInputActionValue& value)
@@ -113,6 +127,17 @@ void ATPCharacterBase::Tick(float DeltaTime)
 	if(!FMath::IsNearlyEqual(_moveAxis.Y,_moveAxisTarget.Y))
 	{
 		_moveAxis.Y = FMath::FInterpTo(_moveAxis.Y, _moveAxisTarget.Y, GetWorld()->GetDeltaSeconds(),moveSpeedY);
+	}
+	
+	//Compute input rot
+	{
+		FVector dir = FVector(_moveAxis.Y,-_moveAxis.X,0.0f);
+		FRotator dir2rot = FRotationMatrix::MakeFromX(dir).Rotator();
+		auto cam2actorRot = _playerCameraComp->GetComponentRotation() - GetActorRotation();
+		cam2actorRot.Normalize();
+		auto result = ( cam2actorRot- dir2rot);
+		result.Normalize();
+		_inputDeltaAngle = result.Yaw;
 	}
 }
 
