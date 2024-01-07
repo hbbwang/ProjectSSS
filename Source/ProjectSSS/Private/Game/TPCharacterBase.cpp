@@ -25,15 +25,18 @@ ATPCharacterBase::ATPCharacterBase():
 	_playerCameraSpringArmComp->bUsePawnControlRotation = true;
 	_playerCameraSpringArmComp->bEnableCameraLag = true;
 	_playerCameraSpringArmComp->bEnableCameraRotationLag = true;
-	_playerCameraSpringArmComp->CameraLagSpeed = 20.0f;
+	_playerCameraSpringArmComp->CameraLagSpeed = 10.0f;
 	_playerCameraSpringArmComp->CameraRotationLagSpeed = 15.0f;
-	_playerCameraSpringArmComp->CameraLagMaxDistance = 50.0f;
+	_playerCameraSpringArmComp->CameraLagMaxDistance = 10.0f;
+	_playerCameraSpringArmComp->TargetArmLength = 120.0f;
+	_playerCameraSpringArmComp->SocketOffset = FVector(0,30.0f,80.0f);
 	
 	_playerCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	_playerCameraComp->SetupAttachment(_playerCameraSpringArmComp);
 	bUseControllerRotationYaw = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator( 0,0,180.0f );
 }
 
 void ATPCharacterBase::OnConstruction(const FTransform& Transform)
@@ -91,13 +94,18 @@ void ATPCharacterBase::InputEvent_MoveRightward(const FInputActionValue& value)
 
 void ATPCharacterBase::InputEvent_Run(const FInputActionValue& value)
 {
-	if(_moveAxisTarget.Y>0.001f)
+	// if(_moveAxisTarget.Y>0.001f)
+	// {
+	// 	_bRun = value.Get<bool>();
+	// }
+	// else
+	// {
+	// 	_bRun = false;
+	// }
+	_bRun = value.Get<bool>();
+	if(RunInputTrigger.IsBound())
 	{
-		_bRun = value.Get<bool>();
-	}
-	else
-	{
-		_bRun = false;
+		RunInputTrigger.Broadcast(_bRun);
 	}
 }
 
@@ -106,7 +114,7 @@ void ATPCharacterBase::InputEvent_LookAxis2D(const FInputActionValue& value)
 	auto moveVector = value.Get<FVector2D>();
 	AddControllerYawInput(moveVector.X);
 	AddControllerPitchInput(-moveVector.Y);
-	GEngine->AddOnScreenDebugMessage(0,0,FColor::Blue,moveVector.ToString());
+	//GEngine->AddOnScreenDebugMessage(0,0,FColor::Blue,moveVector.ToString());
 }
 
 // Called every frame

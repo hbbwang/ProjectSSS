@@ -7,11 +7,14 @@
 #include "GameFramework/Character.h"
 #include "TPCharacterBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRunInputTrigger, bool,bRun);
+
+
 UCLASS()
 class PROJECTSSS_API ATPCharacterBase : public ACharacter
 {
 	GENERATED_BODY()
-
+	
 public:
 	// Sets default values for this character's properties
 	ATPCharacterBase();
@@ -46,6 +49,9 @@ public:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component")
 	FVector _socketOffset_Origin;
+
+	UPROPERTY(BlueprintAssignable,Category="Delegate")
+	FRunInputTrigger RunInputTrigger;
 	
 protected:
 	// Called when the game starts or when spawned
