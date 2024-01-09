@@ -9,6 +9,14 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRunInputTrigger, bool,bRun);
 
+UENUM()
+enum ECharacterState
+{
+	CharacterState_Based		UMETA(DisplayName="基础状态"),
+	CharacterState_Armed		UMETA(DisplayName="武装状态"),
+	CharacterState_Driver		UMETA(DisplayName="驾驶状态"),
+	CharacterState_Pilot			UMETA(DisplayName="飞行状态"),
+};
 
 UCLASS()
 class PROJECTSSS_API ATPCharacterBase : public ACharacter
@@ -19,39 +27,39 @@ public:
 	// Sets default values for this character's properties
 	ATPCharacterBase();
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
-	FVector2D _speed_beginWalk;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	FVector2D SpeedBeginWalk;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
-	FVector2D _speed_endWalk;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	FVector2D SpeedEndWalk;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
-	float _speed_beginRun;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	float SpeedBeginRun;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
-	float _speed_endRun;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	float SpeedEndRun;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
-	bool _bRun;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	bool bRun;
 	
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
-	FVector2D _moveAxis;
-	FVector2D _moveAxisTarget;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	FVector2D MoveAxis;
+	FVector2D MoveAxisTarget;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
-	bool _bMoveInputX;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	bool bMoveInputX;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
-	bool _bMoveInputY;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	bool bMoveInputY;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
-	float _inputDeltaAngle;
-	
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component")
-	FVector _socketOffset_Origin;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	float InputDeltaAngle;
 
 	UPROPERTY(BlueprintAssignable,Category="Delegate")
 	FRunInputTrigger RunInputTrigger;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category=Character)
+	TEnumAsByte<ECharacterState> CharacterState;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -59,26 +67,26 @@ protected:
 
 #pragma region EnhancedInput
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	class UInputMappingContext* _inputMappingContext;
+	class UInputMappingContext* InputMappingContext;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	class UInputAction* _inputMoveForward;
+	class UInputAction* InputMoveForward;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	class UInputAction* _inputMoveBackward;
+	class UInputAction* InputMoveBackward;
 	void InputEvent_MoveForward(const FInputActionValue& value);
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	class UInputAction* _inputMoveRight;
+	class UInputAction* InputMoveRight;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	class UInputAction* _inputMoveLeft;
+	class UInputAction* InputMoveLeft;
 	void InputEvent_MoveRightward(const FInputActionValue& value);
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	class UInputAction* _inputRun;
+	class UInputAction* InputRun;
 	void InputEvent_Run(const FInputActionValue& value);
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	class UInputAction* _inputLookAxis2D;
+	class UInputAction* InputLookAxis2D;
 	void InputEvent_LookAxis2D(const FInputActionValue& value);
 
 #pragma  endregion 
@@ -86,12 +94,12 @@ protected:
 private:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component",meta=(AllowPrivateAccess="true"))
-	class USpringArmComponent* _playerCameraSpringArmComp;
+	class USpringArmComponent* PlayerCameraSpringArmComp;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component",meta=(AllowPrivateAccess="true"))
-	class UCameraComponent* _playerCameraComp;
+	class UCameraComponent* PlayerCameraComp;
 
-	class APlayerController* _playerController = nullptr;
+	class APlayerController* PlayerController = nullptr;
 	
 public:	
 	// Called every frame
