@@ -8,6 +8,7 @@
 #include "TPCharacterBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRunInputTrigger, bool,bRun);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInteractiveInputTrigger);
 
 UENUM()
 enum ECharacterState
@@ -58,6 +59,9 @@ public:
 	UPROPERTY(BlueprintAssignable,Category="Delegate")
 	FRunInputTrigger RunInputTrigger;
 
+	UPROPERTY(BlueprintAssignable,Category="Delegate")
+	FInteractiveInputTrigger InteractiveInputTrigger;
+	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category=Character)
 	TEnumAsByte<ECharacterState> CharacterState;
 	
@@ -89,6 +93,10 @@ protected:
 	class UInputAction* InputLookAxis2D;
 	void InputEvent_LookAxis2D(const FInputActionValue& value);
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	class UInputAction* InputInteractive;
+	void InputEvent_Interactive(const FInputActionValue& value);
+
 #pragma  endregion 
 
 private:
@@ -110,4 +118,7 @@ public:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+protected:
+	virtual void Interactive();
+	
 };

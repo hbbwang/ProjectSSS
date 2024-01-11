@@ -118,6 +118,16 @@ void ATPCharacterBase::InputEvent_LookAxis2D(const FInputActionValue& value)
 	//GEngine->AddOnScreenDebugMessage(0,0,FColor::Blue,moveVector.ToString());
 }
 
+void ATPCharacterBase::InputEvent_Interactive(const FInputActionValue& value)
+{
+	auto bTrigger = value.Get<bool>();
+	Interactive();
+	if(InteractiveInputTrigger.IsBound())
+	{
+		InteractiveInputTrigger.Broadcast();
+	}
+}
+
 // Called every frame
 void ATPCharacterBase::Tick(float DeltaTime)
 {
@@ -177,5 +187,10 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// 	auto mapping = _inputMappingContext->MapKey(_inputMove,EKeys::F);//添加新的按键映射
 	// 	//mapping. //设置映射属性
 	// }
+}
+
+void ATPCharacterBase::Interactive()
+{
+	
 }
 

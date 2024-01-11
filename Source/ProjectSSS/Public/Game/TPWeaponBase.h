@@ -28,11 +28,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual  void OnConstruction(const FTransform& Transform) override;
+
+	virtual void Destroyed() override;
 	
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
 	class USkeletalMeshComponent* Weapon;
 
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Billboard",meta=(AllowPrivateAccess="true"))
 	class UBillboardComponent* Billboard;
-	
+
+	class UTPWorldSubsystem* WorldSubsystem;
 };
