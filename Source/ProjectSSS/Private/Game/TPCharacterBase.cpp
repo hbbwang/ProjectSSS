@@ -7,9 +7,14 @@
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Game/TPWorldManager.h"
+#include "Game/Interactive/TPWeaponBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerInput.h"
+#include "Subsystem/TPWorldSubsystem.h"
+
 // Sets default values
 ATPCharacterBase::ATPCharacterBase():
 	SpeedBeginWalk(FVector2D(8,8)),
@@ -35,10 +40,23 @@ ATPCharacterBase::ATPCharacterBase():
 	PlayerCameraComp->SetupAttachment(PlayerCameraSpringArmComp);
 	bUseControllerRotationYaw = false;
 
+	InteractiveBox = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractiveBox"));
+	InteractiveBox->SetupAttachment(GetMesh());
+	InteractiveBox->SetBoxExtent(FVector(100,100,GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 1.1f));
+	InteractiveBox->SetCollisionProfileName("Interactive");
+	InteractiveBox->OnComponentBeginOverlap.RemoveDynamic(this,&ATPCharacterBase::InteractiveBeginOverlap);
+	InteractiveBox->OnComponentBeginOverlap.AddDynamic(this,&ATPCharacterBase::InteractiveBeginOverlap);
+	InteractiveBox->OnComponentEndOverlap.RemoveDynamic(this,&ATPCharacterBase::InteractiveEndOverlap);
+	InteractiveBox->OnComponentEndOverlap.AddDynamic(this,&ATPCharacterBase::InteractiveEndOverlap);
+	
+	InteractiveBox->SetRelativeLocation(FVector(0,0,GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
+		
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator( 0,0,180.0f );
 
 	CharacterState = ECharacterState::CharacterState_Based;
+
+	MaxWeapon = 2;
 }
 
 void ATPCharacterBase::OnConstruction(const FTransform& Transform)
@@ -65,6 +83,8 @@ void ATPCharacterBase::BeginPlay()
 			Subsystem->AddMappingContext(InputMappingContext, 0);
 		}
 	}
+	
+	WorldSubsystem = GetWorld()->GetSubsystem<UTPWorldSubsystem>();
 }
 
 void ATPCharacterBase::InputEvent_MoveForward(const FInputActionValue& value)
@@ -180,6 +200,9 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	//Run
 	enhancedInputComp->BindAction(InputRun,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_Run);
 	enhancedInputComp->BindAction(InputRun,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Run);
+	//Interactive
+	enhancedInputComp->BindAction(InputInteractive,ETriggerEvent::Started,this,&ATPCharacterBase::InputEvent_Interactive);
+	
 	
 	// //动态修改按键映射模板
 	// {
@@ -189,8 +212,84 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// }
 }
 
+void ATPCharacterBase::InteractiveBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	//GEngine->AddOnScreenDebugMessage(0,10,FColor::Red,OtherActor->GetActorLabel());
+	auto interactiveActor = Cast<ATPInteractiveActor>(OtherActor);
+	if(interactiveActor)
+	{
+		InteractiveActors.AddUnique(interactiveActor);
+	}
+}
+
+void ATPCharacterBase::InteractiveEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	auto interactiveActor = Cast<ATPInteractiveActor>(OtherActor);
+	if(interactiveActor)
+	{
+		InteractiveActors.Remove(interactiveActor);
+	}	
+}
+
 void ATPCharacterBase::Interactive()
 {
+	float currentDis = 99999.0f;
+	ATPInteractiveActor* nearestActor = nullptr;
+	for(auto& i : InteractiveActors)
+	{
+		auto newDist = FVector::Dist(i->GetInteractiveLocation(),GetActorLocation());
+		if( newDist < currentDis)
+		{
+			currentDis = newDist;
+			nearestActor = i;
+		}
+	}
+	if(nearestActor != nullptr)
+	{
+		auto newWeapon = Cast<ATPWeaponBase>(nearestActor);
+		if(newWeapon && !newWeapon->GetInteractiveOwner())
+		{
+			if(Weapons.Num()>=MaxWeapon)
+			{
+				if(CurrentWeapon)
+				{
+					Weapons.Remove(CurrentWeapon);
+				}
+				else
+				{
+					CurrentWeapon = Weapons[0];
+					Weapons.RemoveAt(0);
+				}
+				auto dropLoc = newWeapon->GetInteractiveLocation();
+				dropLoc.Z += 20.0f;
+				CurrentWeapon->Drop(dropLoc);
+			}
+			else
+			{
+				if(CurrentWeapon)
+				{
+					CurrentWeapon->UnEquip(newWeapon);
+				}
+				else
+				{
+					newWeapon->PickUp(this);
+				}
+			}
+			Weapons.AddUnique(newWeapon);
+			CurrentWeapon = newWeapon;
+		}
+	}
+}
+
+void ATPCharacterBase::DropWeapon(ATPWeaponBase* weapon)
+{
+	if(CurrentWeapon == weapon)
+	{
+		CurrentWeapon = nullptr;
+	}
+	weapon->Drop(weapon->GetInteractiveLocation());
+	Weapons.Remove(weapon);
 	
 }
 

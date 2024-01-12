@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Game/TPWeaponBase.h"
+#include "Game/Interactive//TPWeaponBase.h"
 #include "TPWeaponGun.generated.h"
 
 /**

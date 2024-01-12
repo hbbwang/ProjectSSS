@@ -2,7 +2,6 @@
 
 
 #include "Game/TPWorldManager.h"
-#include "Game/TPWeaponBase.h"
 
 // Sets default values
 ATPWorldManager::ATPWorldManager()

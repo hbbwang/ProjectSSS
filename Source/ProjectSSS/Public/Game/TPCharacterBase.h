@@ -69,6 +69,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	class UTPWorldSubsystem* WorldSubsystem;
+
 #pragma region EnhancedInput
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	class UInputMappingContext* InputMappingContext;
@@ -107,6 +109,17 @@ private:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component",meta=(AllowPrivateAccess="true"))
 	class UCameraComponent* PlayerCameraComp;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Component",meta=(AllowPrivateAccess="true"))
+	class UBoxComponent* InteractiveBox;
+
+	UFUNCTION()
+	void InteractiveBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void InteractiveEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	TArray<class ATPInteractiveActor*> InteractiveActors;
+	
 	class APlayerController* PlayerController = nullptr;
 	
 public:	
@@ -118,7 +131,21 @@ public:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	UFUNCTION(BlueprintCallable)
+	void DropWeapon(class ATPWeaponBase* weapon);
+	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Weapon")
+	TArray<class ATPWeaponBase*> Weapons;
+
+	//Current weapon on hand.
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Weapon")
+	class ATPWeaponBase* CurrentWeapon;
+
+	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
+	int32 MaxWeapon;
+	
 protected:
+
 	virtual void Interactive();
 	
 };

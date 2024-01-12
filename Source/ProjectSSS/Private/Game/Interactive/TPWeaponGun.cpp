@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Game/TPWeaponGun.h"
+#include "Game/Interactive/TPWeaponGun.h"
 
 ATPWeaponGun::ATPWeaponGun():ATPWeaponBase()
 {
