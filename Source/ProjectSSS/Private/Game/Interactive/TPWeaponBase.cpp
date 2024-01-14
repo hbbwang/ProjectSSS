@@ -3,6 +3,8 @@
 #include "GameFramework/Character.h"
 #include "Components/BillboardComponent.h"
 #include "Game/TPWorldManager.h"
+#include "PhysicsEngine/PhysicsAsset.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "Subsystem/TPWorldSubsystem.h"
 
 // Sets default values
@@ -17,6 +19,12 @@ ATPWeaponBase::ATPWeaponBase()
 	Weapon->SetSimulatePhysics(true);
 	Weapon->SetCollisionProfileName(TEXT("Interactive"));
 	Weapon->SetGenerateOverlapEvents(true);
+
+	Weapon->BodyInstance.bLockXRotation = 1;
+	Weapon->BodyInstance.bLockYRotation = 1;
+	Weapon->BodyInstance.bLockZRotation = 1;
+	Weapon->BodyInstance.bLockXTranslation = 1;
+	Weapon->BodyInstance.bLockYTranslation = 1;
 	
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard(Editor Only)"));
 	Billboard->SetupAttachment(Weapon);
@@ -27,8 +35,11 @@ ATPWeaponBase::ATPWeaponBase()
 	WeaponEquipTransform.SetLocation(FVector(-22.9,-3.65,4.5));
 	WeaponEquipTransform.SetRotation(FRotator(-10.0f,112,5.0).Quaternion());
 	
-	WeaponBackTransform.SetLocation(FVector(-8,-17,-10));
-	WeaponBackTransform.SetRotation(FRotator(0.0f,100.0f,0.0).Quaternion());
+	WeaponBackTransform_Left.SetLocation(FVector(-8,-17,-10));
+	WeaponBackTransform_Left.SetRotation(FRotator(0.0f,100.0f,0.0).Quaternion());
+
+	WeaponBackTransform_Right.SetLocation(FVector(-8,17,-10));
+	WeaponBackTransform_Right.SetRotation(FRotator(0.0f,100.0f,0.0).Quaternion());
 	
 }
 
@@ -36,33 +47,55 @@ FVector ATPWeaponBase::GetInteractiveLocation()
 {
 	return Weapon->GetComponentLocation();
 }
-
+PRAGMA_DISABLE_OPTIMIZATION
 void ATPWeaponBase::Equip(class ATPCharacterBase* weaponOwner)
 {
 	//to hand
-	bWeaponActive = true;
 	Weapon->AttachToComponent(weaponOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("RHand"));
 	Weapon->SetRelativeTransform(WeaponEquipTransform);
+	this->SetActorHiddenInGame(false);
+	//play equip anim
+	float AnimLength= 0.001f;
+	if(weaponOwner->Rifle_Equip)
+	{
+		AnimLength =  weaponOwner->Rifle_Equip->GetPlayLength();
+		weaponOwner->PlayAnimMontage( weaponOwner->Rifle_Equip );
+	}
+	GetWorld()->GetTimerManager().SetTimer(EquipTimer,[this]()
+	{
+		bWeaponActive = true;
+	},AnimLength , false);
 }
 
 void ATPWeaponBase::UnEquip(ATPWeaponBase* newWeapon)
 {
 	//to back
 	bWeaponActive = false;
-	auto Index = InteractiveOwner->Weapons.Find(newWeapon);
-	if(Index == 0)
+	//play packUp anim
+	float AnimLength= 0.001f;
+	if(InteractiveOwner->Rifle_PackUp)
 	{
-		Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("BackWeapon0"));
+		AnimLength =  InteractiveOwner->Rifle_PackUp->GetPlayLength();
+		InteractiveOwner->PlayAnimMontage( InteractiveOwner->Rifle_PackUp );
 	}
-	else
+	GetWorld()->GetTimerManager().SetTimer(PackUpTimer,[this,newWeapon]()
 	{
-		Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("BackWeapon1"));
-	}
-	Weapon->SetRelativeTransform(WeaponBackTransform);
-	if(!newWeapon)
-	{
-		newWeapon->Equip(InteractiveOwner);
-	}
+		auto Index = InteractiveOwner->Weapons.Find(this);
+		if(Index == 0)
+		{
+			Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("BackWeapon"));
+			Weapon->SetRelativeTransform(WeaponBackTransform_Left);
+		}
+		else
+		{
+			Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("BackWeapon"));
+			Weapon->SetRelativeTransform(WeaponBackTransform_Right);
+		}
+		if(newWeapon)
+		{
+			newWeapon->PickUp(InteractiveOwner);
+		}
+	},AnimLength , false);
 }
 
 void ATPWeaponBase::PickUp(class ATPCharacterBase* weaponOwner)
@@ -72,18 +105,20 @@ void ATPWeaponBase::PickUp(class ATPCharacterBase* weaponOwner)
 	//Change weapon state
 	Weapon->SetSimulatePhysics(false);
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	this->SetActorHiddenInGame(false);
 	//Play pick up anims and effects...
 	Equip(weaponOwner);
 }
 
-void ATPWeaponBase::Drop(FVector dropLocation)
+void ATPWeaponBase::Drop(FVector dropLocation , FRotator Rot)
 {
-	//Play drop anims and effects...
-	
 	//Change weapon state
-	Weapon->SetSimulatePhysics(false);
-	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Weapon->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	Weapon->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);	Weapon->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	Weapon->SetWorldLocation(dropLocation);
+	Weapon->SetWorldRotation(Rot);
+	Weapon->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	Weapon->SetSimulatePhysics(true);
+	this->SetActorHiddenInGame(false);
 	//Set owner
 	SetInteractiveOwner(nullptr);
 }

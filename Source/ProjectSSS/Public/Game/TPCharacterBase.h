@@ -51,10 +51,19 @@ public:
 	bool bMoveInputX;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	bool bMoveInputFlipX;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	bool bMoveInputY;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	bool bMoveInputFlipY;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	float InputDeltaAngle;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	float CurrentMoveSpeed;
 
 	UPROPERTY(BlueprintAssignable,Category="Delegate")
 	FRunInputTrigger RunInputTrigger;
@@ -64,7 +73,13 @@ public:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category=Character)
 	TEnumAsByte<ECharacterState> CharacterState;
-	
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")
+	UAnimMontage* Rifle_Equip;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")
+	UAnimMontage* Rifle_PackUp;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -80,12 +95,14 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	class UInputAction* InputMoveBackward;
 	void InputEvent_MoveForward(const FInputActionValue& value);
+	void InputEvent_Backward(const FInputActionValue& value);
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	class UInputAction* InputMoveRight;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	class UInputAction* InputMoveLeft;
 	void InputEvent_MoveRightward(const FInputActionValue& value);
+	void InputEvent_MoveLeftward(const FInputActionValue& value);
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	class UInputAction* InputRun;

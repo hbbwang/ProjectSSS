@@ -52,7 +52,7 @@ ATPCharacterBase::ATPCharacterBase():
 	InteractiveBox->SetRelativeLocation(FVector(0,0,GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 		
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator( 0,0,180.0f );
+	GetCharacterMovement()->RotationRate = FRotator( 0,0,270.0f );
 
 	CharacterState = ECharacterState::CharacterState_Based;
 
@@ -93,11 +93,30 @@ void ATPCharacterBase::InputEvent_MoveForward(const FInputActionValue& value)
 	MoveAxisTarget.Y = moveVector;
 	if(moveVector > 0.025f || moveVector < -0.025f )
 	{
-		//AddMovementInput( _playerCameraComp->GetForwardVector()*FVector(1,1,0).Normalize(), moveVector);
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
 		AddMovementInput( rot.Vector() , moveVector);
+		bMoveInputY = true;
 	}
-	bMoveInputY = !FMath::IsNearlyEqual(moveVector,0.0f,0.01f);
+	else
+	{
+		bMoveInputY = false;
+	}
+}
+
+void ATPCharacterBase::InputEvent_Backward(const FInputActionValue& value)
+{
+	auto moveVector = value.Get<float>();
+	MoveAxisTarget.Y = moveVector;
+	if(moveVector > 0.025f || moveVector < -0.025f )
+	{
+		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
+		AddMovementInput( rot.Vector() , moveVector);
+		bMoveInputFlipY = true;
+	}
+	else
+	{
+		bMoveInputFlipY = false;
+	}
 }
 
 void ATPCharacterBase::InputEvent_MoveRightward(const FInputActionValue& value)
@@ -109,20 +128,33 @@ void ATPCharacterBase::InputEvent_MoveRightward(const FInputActionValue& value)
 		//AddMovementInput( _playerCameraComp->GetRightVector()*FVector(1,1,0).Normalize(), moveVector);
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
 		AddMovementInput( FRotationMatrix(rot).GetScaledAxis(EAxis::Y) , moveVector);
+		bMoveInputX = true;
 	}
-	bMoveInputX = !FMath::IsNearlyEqual(moveVector,0.0f,0.01f);
+	else
+	{
+		bMoveInputX = false;
+	}
+}
+
+void ATPCharacterBase::InputEvent_MoveLeftward(const FInputActionValue& value)
+{
+	auto moveVector = value.Get<float>();
+	MoveAxisTarget.X = moveVector;
+	if(moveVector > 0.025f || moveVector < -0.025f )
+	{
+		//AddMovementInput( _playerCameraComp->GetRightVector()*FVector(1,1,0).Normalize(), moveVector);
+		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
+		AddMovementInput( FRotationMatrix(rot).GetScaledAxis(EAxis::Y) , moveVector);
+		bMoveInputFlipX = true;
+	}
+	else
+	{
+		bMoveInputFlipX = false;
+	}
 }
 
 void ATPCharacterBase::InputEvent_Run(const FInputActionValue& value)
 {
-	// if(_moveAxisTarget.Y>0.001f)
-	// {
-	// 	_bRun = value.Get<bool>();
-	// }
-	// else
-	// {
-	// 	_bRun = false;
-	// }
 	bRun = value.Get<bool>();
 	if(RunInputTrigger.IsBound())
 	{
@@ -178,6 +210,8 @@ void ATPCharacterBase::Tick(float DeltaTime)
 		result.Normalize();
 		InputDeltaAngle = result.Yaw;
 	}
+
+	CurrentMoveSpeed = GetCharacterMovement()->Velocity.Length();
 }
 
 // Called to bind functionality to input
@@ -187,14 +221,14 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	UEnhancedInputComponent* enhancedInputComp = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 	//Move
 	enhancedInputComp->BindAction(InputMoveForward,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_MoveForward);
-	enhancedInputComp->BindAction(InputMoveBackward,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_MoveForward);
+	enhancedInputComp->BindAction(InputMoveBackward,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_Backward);
 	enhancedInputComp->BindAction(InputMoveRight,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_MoveRightward);
-	enhancedInputComp->BindAction(InputMoveLeft,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_MoveRightward);
+	enhancedInputComp->BindAction(InputMoveLeft,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_MoveLeftward);
 
 	enhancedInputComp->BindAction(InputMoveForward,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_MoveForward);
-	enhancedInputComp->BindAction(InputMoveBackward,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_MoveForward);
+	enhancedInputComp->BindAction(InputMoveBackward,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Backward);
 	enhancedInputComp->BindAction(InputMoveRight,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_MoveRightward);
-	enhancedInputComp->BindAction(InputMoveLeft,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_MoveRightward);
+	enhancedInputComp->BindAction(InputMoveLeft,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_MoveLeftward);
 	//Look at
 	enhancedInputComp->BindAction(InputLookAxis2D,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_LookAxis2D);
 	//Run
@@ -202,7 +236,6 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	enhancedInputComp->BindAction(InputRun,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Run);
 	//Interactive
 	enhancedInputComp->BindAction(InputInteractive,ETriggerEvent::Started,this,&ATPCharacterBase::InputEvent_Interactive);
-	
 	
 	// //动态修改按键映射模板
 	// {
@@ -250,6 +283,9 @@ void ATPCharacterBase::Interactive()
 		auto newWeapon = Cast<ATPWeaponBase>(nearestActor);
 		if(newWeapon && !newWeapon->GetInteractiveOwner())
 		{
+			newWeapon->SetInteractiveOwner(this);//lock
+			newWeapon->GetWeaponComp()->SetSimulatePhysics(false);
+			newWeapon->SetActorHiddenInGame(true);
 			if(Weapons.Num()>=MaxWeapon)
 			{
 				if(CurrentWeapon)
@@ -263,7 +299,8 @@ void ATPCharacterBase::Interactive()
 				}
 				auto dropLoc = newWeapon->GetInteractiveLocation();
 				dropLoc.Z += 20.0f;
-				CurrentWeapon->Drop(dropLoc);
+				CurrentWeapon->Drop(dropLoc,newWeapon->GetWeaponComp()->GetComponentRotation());
+				newWeapon->PickUp(this);
 			}
 			else
 			{
@@ -288,7 +325,7 @@ void ATPCharacterBase::DropWeapon(ATPWeaponBase* weapon)
 	{
 		CurrentWeapon = nullptr;
 	}
-	weapon->Drop(weapon->GetInteractiveLocation());
+	weapon->Drop(weapon->GetInteractiveLocation(),FRotator(0,0,0));
 	Weapons.Remove(weapon);
 	
 }

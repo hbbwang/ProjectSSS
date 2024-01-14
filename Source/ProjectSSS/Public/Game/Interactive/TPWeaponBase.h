@@ -27,7 +27,7 @@ public:
 		return bWeaponActive;
 	}
 
-	UFUNCTION(BlueprintCallable)
+	//UFUNCTION(BlueprintCallable)
 	virtual void Equip(class ATPCharacterBase* weaponOwner);
 
 	UFUNCTION(BlueprintCallable)
@@ -37,13 +37,16 @@ public:
 	virtual void PickUp(class ATPCharacterBase* weaponOwner);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Drop(FVector dropLocation);
+	virtual void Drop(FVector dropLocation, FRotator Rot);
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	FTransform WeaponEquipTransform;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
-	FTransform WeaponBackTransform;
+	FTransform WeaponBackTransform_Left;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	FTransform WeaponBackTransform_Right;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -63,4 +66,7 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
 	bool bWeaponActive;
+
+	FTimerHandle EquipTimer;
+	FTimerHandle PackUpTimer;
 };
