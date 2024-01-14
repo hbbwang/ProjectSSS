@@ -7,7 +7,8 @@
 #include "GameFramework/Character.h"
 #include "TPCharacterBase.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRunInputTrigger, bool,bRun);
+class ATPWeaponBase;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRunInputTrigger, bool, bRun);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInteractiveInputTrigger);
 
 UENUM()
@@ -149,6 +150,12 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	UFUNCTION(BlueprintCallable)
+	void SpawnWeapon(class UClass* weaponClass);
+
+	UFUNCTION(BlueprintCallable)
+	void PickUpWeapon(AActor* weapon);
+	
+	UFUNCTION(BlueprintCallable)
 	void DropWeapon(class ATPWeaponBase* weapon);
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Weapon")
@@ -160,6 +167,12 @@ public:
 
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
 	int32 MaxWeapon;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Weapon")
+	bool bEquip;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Weapon")
+	bool bPackUp;
 	
 protected:
 

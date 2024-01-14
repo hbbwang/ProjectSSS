@@ -27,18 +27,6 @@ public:
 		return bWeaponActive;
 	}
 
-	//UFUNCTION(BlueprintCallable)
-	virtual void Equip(class ATPCharacterBase* weaponOwner);
-
-	UFUNCTION(BlueprintCallable)
-	virtual void UnEquip(ATPWeaponBase* newWeapon);
-
-	UFUNCTION(BlueprintCallable)
-	virtual void PickUp(class ATPCharacterBase* weaponOwner);
-
-	UFUNCTION(BlueprintCallable)
-	virtual void Drop(FVector dropLocation, FRotator Rot);
-
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	FTransform WeaponEquipTransform;
 
@@ -47,6 +35,18 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	FTransform WeaponBackTransform_Right;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	FTransform HandPosAndRot_Left;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	FTransform HandPosAndRot_Right;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	bool bEnableHandPosRot_Left;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	bool bEnableHandPosRot_Right;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -55,6 +55,9 @@ protected:
 	virtual  void OnConstruction(const FTransform& Transform) override;
 
 	virtual void Destroyed() override;
+
+	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
+	bool bWeaponActive;
 	
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
 	class USkeletalMeshComponent* Weapon;
@@ -63,10 +66,5 @@ protected:
 	class UBillboardComponent* Billboard;
 
 	class UTPWorldSubsystem* WorldSubsystem;
-
-	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
-	bool bWeaponActive;
-
-	FTimerHandle EquipTimer;
-	FTimerHandle PackUpTimer;
+	
 };

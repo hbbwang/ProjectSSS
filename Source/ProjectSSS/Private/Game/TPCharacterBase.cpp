@@ -70,6 +70,12 @@ void ATPCharacterBase::OnConstruction(const FTransform& Transform)
 	GetMesh()->SetRelativeRotation(newRotation);
 }
 
+void ATPCharacterBase::SpawnWeapon(UClass* weaponClass)
+{
+	auto newWeapon = GetWorld()->SpawnActor(weaponClass);
+	PickUpWeapon(newWeapon);
+}
+
 // Called when the game starts or when spawned
 void ATPCharacterBase::BeginPlay()
 {
@@ -278,9 +284,18 @@ void ATPCharacterBase::Interactive()
 			nearestActor = i;
 		}
 	}
-	if(nearestActor != nullptr)
+	PickUpWeapon(nearestActor);
+}
+
+void ATPCharacterBase::PickUpWeapon(AActor* weaponActor)
+{
+	if(bEquip || bPackUp)
 	{
-		auto newWeapon = Cast<ATPWeaponBase>(nearestActor);
+		return;
+	}
+	if(weaponActor != nullptr)
+	{
+		auto newWeapon = Cast<ATPWeaponBase>(weaponActor);
 		if(newWeapon && !newWeapon->GetInteractiveOwner())
 		{
 			newWeapon->SetInteractiveOwner(this);//lock

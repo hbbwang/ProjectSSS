@@ -38,13 +38,35 @@ public:
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Gun")
 	TEnumAsByte<EWeaponReloadingMode> WeaponReloadingMode;
-
+	
+	virtual void UnEquip(ATPWeaponBase* newWeapon)override;
+	
+	virtual void PickUp(class ATPCharacterBase* weaponOwner)override;
+	
+	virtual void Drop(FVector dropLocation, FRotator Rot)override;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	//开枪动画
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")
+	UAnimSequence* Fire;
+
+	//重新填装
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")
+	UAnimSequence* Reload;
+
+	//上膛
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")
+	UAnimSequence* Load;
+
+	FTimerHandle EquipTimer;
 	
+	FTimerHandle PackUpTimer;
+
+	void ClearAnimMotageTimer();
 	
 };

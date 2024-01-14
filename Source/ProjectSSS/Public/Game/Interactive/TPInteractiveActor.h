@@ -31,6 +31,15 @@ public:
 		return InteractiveOwner;
 	}
 
+	UFUNCTION(BlueprintCallable)
+	virtual void UnEquip(ATPWeaponBase* newWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void PickUp(class ATPCharacterBase* weaponOwner);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Drop(FVector dropLocation, FRotator Rot);
+	
 protected:
 
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
