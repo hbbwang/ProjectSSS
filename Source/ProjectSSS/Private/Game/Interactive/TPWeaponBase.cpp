@@ -25,6 +25,12 @@ ATPWeaponBase::ATPWeaponBase()
 	Weapon->BodyInstance.bLockZRotation = 1;
 	Weapon->BodyInstance.bLockXTranslation = 1;
 	Weapon->BodyInstance.bLockYTranslation = 1;
+
+	LeftHandTran = CreateDefaultSubobject<USceneComponent>(TEXT("LeftHandTran"));
+	LeftHandTran->SetupAttachment(Weapon);
+	
+	RightHandTran = CreateDefaultSubobject<USceneComponent>(TEXT("RightHandTran"));
+	RightHandTran->SetupAttachment(Weapon);
 	
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard(Editor Only)"));
 	Billboard->SetupAttachment(Weapon);

@@ -49,6 +49,7 @@ void ATPWeaponGun::UnEquip(ATPWeaponBase* newWeapon)
 			Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("BackWeapon"));
 			Weapon->SetRelativeTransform(WeaponBackTransform_Right);
 		}
+		bOnBack = true;
 		if(newWeapon)
 		{
 			newWeapon->PickUp(InteractiveOwner);
@@ -80,6 +81,7 @@ void ATPWeaponGun::PickUp(ATPCharacterBase* weaponOwner)
 	{
 		InteractiveOwner->bEquip = false;
 		bWeaponActive = true;
+		bOnBack = false;
 	},AnimLength , false);
 }
 
@@ -95,6 +97,7 @@ void ATPWeaponGun::Drop(FVector dropLocation, FRotator Rot)
 	this->SetActorHiddenInGame(false);
 	//Set owner
 	SetInteractiveOwner(nullptr);
+	bOnBack = false;
 }
 
 void ATPWeaponGun::BeginPlay()
@@ -111,11 +114,6 @@ void ATPWeaponGun::OnConstruction(const FTransform& Transform)
 void ATPWeaponGun::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	//Debug
-	if(!Weapon->IsSimulatingPhysics())
-	{
-		Weapon->SetRelativeTransform(WeaponEquipTransform);
-	}
 }
 #endif
 

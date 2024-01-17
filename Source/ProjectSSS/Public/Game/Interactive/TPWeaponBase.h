@@ -36,12 +36,6 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="右后背 武器位置和旋转"))
 	FTransform WeaponBackTransform_Right;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="左手 的手腕位置和旋转"))
-	FTransform HandPosAndRot_Left;
-
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="右手 的手腕位置和旋转"))
-	FTransform HandPosAndRot_Right;
-
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="是否开启 左手 手腕位置和旋转变换"))
 	bool bEnableHandPosRot_Left;
 	
@@ -68,8 +62,16 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
 	class USkeletalMeshComponent* Weapon;
 
+	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
+	class USceneComponent* LeftHandTran;
+
+	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
+	class USceneComponent* RightHandTran;
+
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Billboard",meta=(AllowPrivateAccess="true"))
 	class UBillboardComponent* Billboard;
+
+	
 
 	class UTPWorldSubsystem* WorldSubsystem;
 	

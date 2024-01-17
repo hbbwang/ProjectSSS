@@ -72,5 +72,8 @@ protected:
 	FTimerHandle PackUpTimer;
 
 	void ClearAnimMotageTimer();
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Weapon")
+	bool bOnBack;
 	
 };
