@@ -27,26 +27,32 @@ public:
 		return bWeaponActive;
 	}
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="武器在手上 的位置和旋转"))
 	FTransform WeaponEquipTransform;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="左后背 武器位置和旋转"))
 	FTransform WeaponBackTransform_Left;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="右后背 武器位置和旋转"))
 	FTransform WeaponBackTransform_Right;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="左手 的手腕位置和旋转"))
 	FTransform HandPosAndRot_Left;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="右手 的手腕位置和旋转"))
 	FTransform HandPosAndRot_Right;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="是否开启 左手 手腕位置和旋转变换"))
 	bool bEnableHandPosRot_Left;
 	
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="是否开启 右手 手腕位置和旋转变换"))
 	bool bEnableHandPosRot_Right;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="左手 手肘朝向的位置"))
+	FVector JointTargetLocation_LeftHand;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="右手 手肘朝向的位置"))
+	FVector JointTargetLocation_RightHand;
 	
 protected:
 	// Called when the game starts or when spawned

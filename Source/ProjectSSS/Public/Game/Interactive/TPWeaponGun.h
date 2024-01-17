@@ -51,6 +51,10 @@ protected:
 	
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+#if WITH_EDITOR
+	virtual void Tick(float DeltaSeconds) override;
+#endif
+	
 	//开枪动画
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")
 	UAnimSequence* Fire;

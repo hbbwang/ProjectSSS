@@ -5,6 +5,9 @@
 
 ATPWeaponGun::ATPWeaponGun():ATPWeaponBase()
 {
+#if WITH_EDITOR
+	PrimaryActorTick.bCanEverTick = true;
+#endif
 	CurrentWeaponFiringMode = EWeaponFiringMode::WFM_Automatic;
 	WeaponReloadingMode = EWeaponReloadingMode::FM_Magazine;
 	
@@ -103,6 +106,18 @@ void ATPWeaponGun::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 }
+
+#if WITH_EDITOR
+void ATPWeaponGun::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	//Debug
+	if(!Weapon->IsSimulatingPhysics())
+	{
+		Weapon->SetRelativeTransform(WeaponEquipTransform);
+	}
+}
+#endif
 
 void ATPWeaponGun::ClearAnimMotageTimer()
 {
