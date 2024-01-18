@@ -31,6 +31,14 @@ ATPWeaponBase::ATPWeaponBase()
 	
 	RightHandTran = CreateDefaultSubobject<USceneComponent>(TEXT("RightHandTran"));
 	RightHandTran->SetupAttachment(Weapon);
+	RightHandTran->SetRelativeRotation(FRotator(0,-90,0));
+
+	LeftHandTran_Aim = CreateDefaultSubobject<USceneComponent>(TEXT("LeftHandTran_Aim"));
+	LeftHandTran_Aim->SetupAttachment(Weapon);
+	
+	RightHandTran_Aim = CreateDefaultSubobject<USceneComponent>(TEXT("RightHandTran_Aim"));
+	RightHandTran_Aim->SetupAttachment(Weapon);
+	RightHandTran_Aim->SetRelativeRotation(FRotator(0,-90,0));
 	
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard(Editor Only)"));
 	Billboard->SetupAttachment(Weapon);

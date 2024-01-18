@@ -68,10 +68,14 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
 	class USceneComponent* RightHandTran;
 
+	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
+	class USceneComponent* LeftHandTran_Aim;
+
+	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
+	class USceneComponent* RightHandTran_Aim;
+
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Billboard",meta=(AllowPrivateAccess="true"))
 	class UBillboardComponent* Billboard;
-
-	
 
 	class UTPWorldSubsystem* WorldSubsystem;
 	

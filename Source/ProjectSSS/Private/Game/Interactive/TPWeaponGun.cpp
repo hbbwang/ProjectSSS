@@ -89,7 +89,7 @@ void ATPWeaponGun::Drop(FVector dropLocation, FRotator Rot)
 {
 	Super::Drop(dropLocation,Rot);
 	//Change weapon state
-	Weapon->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);	Weapon->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	Weapon->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	Weapon->SetWorldLocation(dropLocation);
 	Weapon->SetWorldRotation(Rot);
 	Weapon->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);

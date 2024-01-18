@@ -9,15 +9,15 @@
 
 class ATPWeaponBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRunInputTrigger, bool, bRun);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAimInputTrigger, bool, bAim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInteractiveInputTrigger);
 
 UENUM()
 enum ECharacterState
 {
 	CharacterState_Based		UMETA(DisplayName="基础状态"),
-	CharacterState_Armed		UMETA(DisplayName="武装状态"),
 	CharacterState_Driver		UMETA(DisplayName="驾驶状态"),
-	CharacterState_Pilot			UMETA(DisplayName="飞行状态"),
+	CharacterState_Pilot		UMETA(DisplayName="飞行状态"),
 };
 
 UCLASS()
@@ -66,9 +66,15 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	float CurrentMoveSpeed;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	bool bAim;
+	
 	UPROPERTY(BlueprintAssignable,Category="Delegate")
 	FRunInputTrigger RunInputTrigger;
 
+	UPROPERTY(BlueprintAssignable,Category="Delegate")
+	FAimInputTrigger AimInputTrigger;
+	
 	UPROPERTY(BlueprintAssignable,Category="Delegate")
 	FInteractiveInputTrigger InteractiveInputTrigger;
 	
@@ -116,6 +122,10 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	class UInputAction* InputInteractive;
 	void InputEvent_Interactive(const FInputActionValue& value);
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	class UInputAction* InputAim;
+	void InputEvent_Aim(const FInputActionValue& value);
 
 #pragma  endregion 
 

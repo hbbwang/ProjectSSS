@@ -52,7 +52,7 @@ ATPCharacterBase::ATPCharacterBase():
 	InteractiveBox->SetRelativeLocation(FVector(0,0,GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 		
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator( 0,0,270.0f );
+	GetCharacterMovement()->RotationRate = FRotator( 0,210.0f,0 );
 
 	CharacterState = ECharacterState::CharacterState_Based;
 
@@ -186,6 +186,16 @@ void ATPCharacterBase::InputEvent_Interactive(const FInputActionValue& value)
 	}
 }
 
+void ATPCharacterBase::InputEvent_Aim(const FInputActionValue& value)
+{
+	auto bTrigger = value.Get<bool>();
+	bAim = bTrigger;
+	if(AimInputTrigger.IsBound())
+	{
+		AimInputTrigger.Broadcast(bAim);
+	}
+}
+
 // Called every frame
 void ATPCharacterBase::Tick(float DeltaTime)
 {
@@ -242,6 +252,9 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	enhancedInputComp->BindAction(InputRun,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Run);
 	//Interactive
 	enhancedInputComp->BindAction(InputInteractive,ETriggerEvent::Started,this,&ATPCharacterBase::InputEvent_Interactive);
+	//Aim
+	enhancedInputComp->BindAction(InputAim,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_Aim);
+	enhancedInputComp->BindAction(InputAim,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Aim);
 	
 	// //动态修改按键映射模板
 	// {
