@@ -31,23 +31,31 @@ public:
 	ATPCharacterBase();
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	FVector2D SpeedBeginWalk;
-
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	FVector2D SpeedEndWalk;
-
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	float SpeedBeginRun;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	float SpeedEndRun;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	float WalkSpeed;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	float RunSpeed;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	float WalkSpeedWithWeapon;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	float AimWalkSpeedWithWeapon;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	float RunSpeedWithWeapon;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	bool bRun;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	FVector2D MoveAxis;
-	FVector2D MoveAxisTarget;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	bool bMoveInputX;
@@ -213,5 +221,7 @@ public:
 protected:
 
 	virtual void Interactive();
+
+	void UpdateMovementSpeed();
 	
 };

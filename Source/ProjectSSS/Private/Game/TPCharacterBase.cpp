@@ -17,8 +17,6 @@
 
 // Sets default values
 ATPCharacterBase::ATPCharacterBase():
-	SpeedBeginWalk(FVector2D(8,8)),
-	SpeedEndWalk(FVector2D(20,20)),
 	SpeedBeginRun(12),
 	SpeedEndRun(25)
 {
@@ -58,6 +56,12 @@ ATPCharacterBase::ATPCharacterBase():
 	AimOffsetRotSpeed = 10.0f;
 	AimOffsetRotBias = FRotator(0,0,0);
 	MaxWeapon = 2;
+
+	WalkSpeed = 300.0f;
+	RunSpeed = 500.0f;
+	WalkSpeedWithWeapon = 250.0f;
+	RunSpeedWithWeapon = 450.0f;
+	AimWalkSpeedWithWeapon = 100.0f;
 }
 
 void ATPCharacterBase::OnConstruction(const FTransform& Transform)
@@ -97,7 +101,6 @@ void ATPCharacterBase::BeginPlay()
 void ATPCharacterBase::InputEvent_MoveForward(const FInputActionValue& value)
 {
 	auto moveVector = value.Get<float>();
-	MoveAxisTarget.Y = moveVector;
 	if(moveVector > 0.025f || moveVector < -0.025f )
 	{
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
@@ -113,8 +116,7 @@ void ATPCharacterBase::InputEvent_MoveForward(const FInputActionValue& value)
 void ATPCharacterBase::InputEvent_Backward(const FInputActionValue& value)
 {
 	auto moveVector = value.Get<float>();
-	MoveAxisTarget.Y = moveVector;
-	if(moveVector > 0.025f || moveVector < -0.025f )
+	if(moveVector < -0.005f )
 	{
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
 		AddMovementInput( rot.Vector() , moveVector);
@@ -129,10 +131,8 @@ void ATPCharacterBase::InputEvent_Backward(const FInputActionValue& value)
 void ATPCharacterBase::InputEvent_MoveRightward(const FInputActionValue& value)
 {
 	auto moveVector = value.Get<float>();
-	MoveAxisTarget.X = moveVector;
-	if(moveVector > 0.025f || moveVector < -0.025f )
+	if(moveVector > 0.005f )
 	{
-		//AddMovementInput( _playerCameraComp->GetRightVector()*FVector(1,1,0).Normalize(), moveVector);
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
 		AddMovementInput( FRotationMatrix(rot).GetScaledAxis(EAxis::Y) , moveVector);
 		bMoveInputX = true;
@@ -146,10 +146,8 @@ void ATPCharacterBase::InputEvent_MoveRightward(const FInputActionValue& value)
 void ATPCharacterBase::InputEvent_MoveLeftward(const FInputActionValue& value)
 {
 	auto moveVector = value.Get<float>();
-	MoveAxisTarget.X = moveVector;
-	if(moveVector > 0.025f || moveVector < -0.025f )
+	if(moveVector < -0.005f )
 	{
-		//AddMovementInput( _playerCameraComp->GetRightVector()*FVector(1,1,0).Normalize(), moveVector);
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
 		AddMovementInput( FRotationMatrix(rot).GetScaledAxis(EAxis::Y) , moveVector);
 		bMoveInputFlipX = true;
@@ -163,6 +161,10 @@ void ATPCharacterBase::InputEvent_MoveLeftward(const FInputActionValue& value)
 void ATPCharacterBase::InputEvent_Run(const FInputActionValue& value)
 {
 	bRun = value.Get<bool>();
+	if(bAim)
+	{
+		bRun = false;
+	}
 	if(RunInputTrigger.IsBound())
 	{
 		RunInputTrigger.Broadcast(bRun);
@@ -211,21 +213,6 @@ void ATPCharacterBase::InputEvent_Fire(const FInputActionValue& value)
 void ATPCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	float moveSpeedX = bRun?SpeedBeginRun:SpeedBeginWalk.X;
-	float moveSpeedY = bRun?SpeedBeginRun:SpeedBeginWalk.Y;
-	if(FMath::IsNearlyEqual(MoveAxisTarget.X ,  0.0f))
-		moveSpeedX = SpeedEndWalk.X;
-	if(FMath::IsNearlyEqual(MoveAxisTarget.Y ,  0.0f))
-		moveSpeedY = SpeedEndWalk.Y;
-	
-	if(!FMath::IsNearlyEqual(MoveAxis.X,MoveAxisTarget.X))
-	{
-		MoveAxis.X = FMath::FInterpTo(MoveAxis.X, MoveAxisTarget.X, GetWorld()->GetDeltaSeconds(),moveSpeedX);
-	}
-	if(!FMath::IsNearlyEqual(MoveAxis.Y,MoveAxisTarget.Y))
-	{
-		MoveAxis.Y = FMath::FInterpTo(MoveAxis.Y, MoveAxisTarget.Y, GetWorld()->GetDeltaSeconds(),moveSpeedY);
-	}
 	
 	//Compute input rot
 	{
@@ -252,7 +239,11 @@ void ATPCharacterBase::Tick(float DeltaTime)
 	AimOffsetDelteRot.Normalize();
 	AimOffsetDelteRot += AimOffsetRotBias;
 	AimOffsetRot = FMath::RInterpTo(AimOffsetRot,AimOffsetDelteRot,DeltaTime,AimOffsetRotSpeed);
-	
+
+	UpdateMovementSpeed();
+
+	MoveAxis.X = (float)bMoveInputX - (float)bMoveInputFlipX ;
+	MoveAxis.Y = (float)bMoveInputY - (float)bMoveInputFlipY ;
 }
 
 // Called to bind functionality to input
@@ -327,6 +318,39 @@ void ATPCharacterBase::Interactive()
 		}
 	}
 	PickUpWeapon(nearestActor);
+}
+
+void ATPCharacterBase::UpdateMovementSpeed()
+{
+	if(!bRun)
+	{
+		if(CurrentWeapon)
+		{
+			if(bAim)
+			{
+				GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeedWithWeapon;
+			}
+			else
+			{
+				GetCharacterMovement()->MaxWalkSpeed = WalkSpeedWithWeapon;
+			}
+		}
+		else
+		{
+			GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+		}
+	}
+	else
+	{
+		if(CurrentWeapon)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = RunSpeedWithWeapon;
+		}
+		else
+		{
+			GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+		}
+	}
 }
 
 void ATPCharacterBase::PickUpWeapon(AActor* weaponActor)
