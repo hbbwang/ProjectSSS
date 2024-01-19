@@ -10,6 +10,7 @@
 class ATPWeaponBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRunInputTrigger, bool, bRun);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAimInputTrigger, bool, bAim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFireInputTrigger, bool, bFire);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FInteractiveInputTrigger);
 
 UENUM()
@@ -68,12 +69,27 @@ public:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	bool bAim;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	bool bFire;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	FRotator AimOffsetRot;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	FRotator AimOffsetRotBias;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	float AimOffsetRotSpeed;
 	
 	UPROPERTY(BlueprintAssignable,Category="Delegate")
 	FRunInputTrigger RunInputTrigger;
 
 	UPROPERTY(BlueprintAssignable,Category="Delegate")
 	FAimInputTrigger AimInputTrigger;
+
+	UPROPERTY(BlueprintAssignable,Category="Delegate")
+	FFireInputTrigger FireInputTrigger;
 	
 	UPROPERTY(BlueprintAssignable,Category="Delegate")
 	FInteractiveInputTrigger InteractiveInputTrigger;
@@ -127,6 +143,10 @@ protected:
 	class UInputAction* InputAim;
 	void InputEvent_Aim(const FInputActionValue& value);
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	class UInputAction* InputFire;
+	void InputEvent_Fire(const FInputActionValue& value);
+
 #pragma  endregion 
 
 private:
@@ -167,6 +187,12 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void DropWeapon(class ATPWeaponBase* weapon);
+
+#if WITH_EDITOR
+	UFUNCTION(BlueprintCallable,Exec)
+	void HoldAimState();
+	bool bHoldAimState;
+#endif
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Weapon")
 	TArray<class ATPWeaponBase*> Weapons;

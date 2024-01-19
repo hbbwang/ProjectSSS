@@ -56,6 +56,19 @@ FVector ATPWeaponBase::GetInteractiveLocation()
 void ATPWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
+	if(WorldSubsystem)
+	{
+		WorldSubsystem->GetWorldManager()->Weapons.AddUnique(this);
+	}
+}
+
+void ATPWeaponBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	if(WorldSubsystem)
+    {
+    	WorldSubsystem->GetWorldManager()->Weapons.Remove(this);
+    }
 }
 
 void ATPWeaponBase::OnConstruction(const FTransform& Transform)
@@ -66,12 +79,7 @@ void ATPWeaponBase::OnConstruction(const FTransform& Transform)
 	{
 		Billboard->SetSprite(billboardTex);
 	}
-	
 	WorldSubsystem  = GetWorld()->GetSubsystem<UTPWorldSubsystem>();
-	if(WorldSubsystem)
-	{
-		WorldSubsystem->GetWorldManager()->Weapons.AddUnique(this);
-	}
 }
 
 void ATPWeaponBase::Destroyed()

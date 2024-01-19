@@ -55,7 +55,8 @@ ATPCharacterBase::ATPCharacterBase():
 	GetCharacterMovement()->RotationRate = FRotator( 0,210.0f,0 );
 
 	CharacterState = ECharacterState::CharacterState_Based;
-
+	AimOffsetRotSpeed = 10.0f;
+	AimOffsetRotBias = FRotator(0,0,0);
 	MaxWeapon = 2;
 }
 
@@ -196,6 +197,16 @@ void ATPCharacterBase::InputEvent_Aim(const FInputActionValue& value)
 	}
 }
 
+void ATPCharacterBase::InputEvent_Fire(const FInputActionValue& value)
+{
+	auto bTrigger = value.Get<bool>();
+	bFire = bTrigger;
+	if(FireInputTrigger.IsBound())
+	{
+		FireInputTrigger.Broadcast(bAim);
+	}
+}
+
 // Called every frame
 void ATPCharacterBase::Tick(float DeltaTime)
 {
@@ -226,8 +237,22 @@ void ATPCharacterBase::Tick(float DeltaTime)
 		result.Normalize();
 		InputDeltaAngle = result.Yaw;
 	}
-
 	CurrentMoveSpeed = GetCharacterMovement()->Velocity.Length();
+
+#if WITH_EDITOR
+	//Hold aim state
+	if(bHoldAimState)
+	{
+		FInputActionValue value = FInputActionValue(1.0f);
+		InputEvent_Aim(value);
+	}
+#endif
+
+	auto AimOffsetDelteRot = (PlayerCameraComp->GetComponentRotation()-GetActorRotation());
+	AimOffsetDelteRot.Normalize();
+	AimOffsetDelteRot += AimOffsetRotBias;
+	AimOffsetRot = FMath::RInterpTo(AimOffsetRot,AimOffsetDelteRot,DeltaTime,AimOffsetRotSpeed);
+	
 }
 
 // Called to bind functionality to input
@@ -255,6 +280,10 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	//Aim
 	enhancedInputComp->BindAction(InputAim,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_Aim);
 	enhancedInputComp->BindAction(InputAim,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Aim);
+	//Fire
+	//Aim
+	enhancedInputComp->BindAction(InputFire,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_Fire);
+	enhancedInputComp->BindAction(InputFire,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Fire);
 	
 	// //动态修改按键映射模板
 	// {
@@ -356,3 +385,18 @@ void ATPCharacterBase::DropWeapon(ATPWeaponBase* weapon)
 	
 }
 
+#if WITH_EDITOR
+void ATPCharacterBase::HoldAimState()
+{
+	if(!bHoldAimState)
+	{
+		bHoldAimState = true;
+	}
+	else
+	{
+		bHoldAimState = false;
+		FInputActionValue value = FInputActionValue(0.0f);
+		InputEvent_Aim(value);
+	}
+}
+#endif
