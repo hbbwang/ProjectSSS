@@ -43,8 +43,6 @@ public:
 	
 	virtual void PickUp(class ATPCharacterBase* weaponOwner)override;
 	
-	virtual void Drop(FVector dropLocation, FRotator Rot)override;
-	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -54,6 +52,8 @@ protected:
 #if WITH_EDITOR
 	virtual void Tick(float DeltaSeconds) override;
 #endif
+
+	virtual void Drop(FVector dropLocation, FRotator Rot)override;
 	
 	//开枪动画
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")

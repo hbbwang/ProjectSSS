@@ -322,7 +322,6 @@ void ATPCharacterBase::PickUpWeapon(AActor* weaponActor)
 				}
 				else
 				{
-					CurrentWeapon = Weapons[0];
 					Weapons.RemoveAt(0);
 				}
 				auto dropLoc = newWeapon->GetInteractiveLocation();
@@ -342,7 +341,6 @@ void ATPCharacterBase::PickUpWeapon(AActor* weaponActor)
 				}
 			}
 			Weapons.AddUnique(newWeapon);
-			CurrentWeapon = newWeapon;
 		}
 	}
 }

@@ -45,7 +45,6 @@ ATPWeaponBase::ATPWeaponBase()
 	Billboard->bIsEditorOnly = true;
 	Billboard->bIsScreenSizeScaled = true;
 	Billboard->SetRelativeScale3D(FVector(0.75f,0.75f,0.75f));
-	
 }
 
 FVector ATPWeaponBase::GetInteractiveLocation()

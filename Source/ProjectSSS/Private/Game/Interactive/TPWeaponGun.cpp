@@ -54,12 +54,17 @@ void ATPWeaponGun::UnEquip(ATPWeaponBase* newWeapon)
 		{
 			newWeapon->PickUp(InteractiveOwner);
 		}
+		else
+		{
+			InteractiveOwner->CurrentWeapon = nullptr;
+		}
 	},AnimLength , false);
 }
 
 void ATPWeaponGun::PickUp(ATPCharacterBase* weaponOwner)
 {
 	Super::PickUp(weaponOwner);
+	InteractiveOwner->CurrentWeapon = this;
 	InteractiveOwner->bEquip = true;
 	//Set owner
 	SetInteractiveOwner(weaponOwner);
