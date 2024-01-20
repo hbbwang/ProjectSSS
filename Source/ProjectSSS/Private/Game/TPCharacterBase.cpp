@@ -285,27 +285,23 @@ void ATPCharacterBase::Tick(float DeltaTime)
 		GetCharacterMovement()->MaxWalkSpeed = TargetMovementSpeed;
 	}
 
-	if(FMath::Abs(AimOffsetRot.Yaw)>65.0f || bMoveInputX || bMoveInputFlipX || bMoveInputY || bMoveInputFlipY)
+	//if(FMath::Abs(AimOffsetRot.Yaw)>65.0f || bMoveInputX || bMoveInputFlipX || bMoveInputY || bMoveInputFlipY)
 	{
 		AimTurnRot = FRotationMatrix::MakeFromX(PlayerCameraComp->GetForwardVector()).Rotator();
 	}
 	
-	// if(CurrentWeapon && bAim)
- //    {
- //    	// if(!FMath::IsNearlyEqual(AimTurnRot.Yaw,GetActorRotation().Yaw,0.05f))
- //    	// {
- //    	// 	auto newRot = GetActorRotation();
- //    	// 	newRot.Yaw = AimTurnRot.Yaw;
- //    	// 	SetActorRotation(FMath::RInterpTo(GetActorRotation() , newRot , GetWorld()->GetDeltaSeconds(),FMath::Max(MinAimTurnSpeed, FMath::Abs(AimOffsetRot.Yaw/10.0f) )));
- //    	// }
- //    	// else
- //    	// {
- //    	// 	bAimTurn = false;
- //    	// }
-	// 	auto newRot = GetActorRotation();
-	// 	newRot.Yaw = AimTurnRot.Yaw;
-	// 	SetActorRotation(newRot);
- //    }
+	if(CurrentWeapon && bAim)
+    {
+    	if(!FMath::IsNearlyEqual(AimTurnRot.Yaw,GetActorRotation().Yaw,0.05f))
+    	{
+    		auto newRot = GetActorRotation();
+    		newRot.Yaw = AimTurnRot.Yaw;
+    		SetActorRotation(FMath::RInterpTo(GetActorRotation() , newRot , GetWorld()->GetDeltaSeconds(),MinAimTurnSpeed));
+    	}
+		// auto newRot = GetActorRotation();
+		// newRot.Yaw = AimTurnRot.Yaw;
+		// SetActorRotation(newRot);
+    }
 	
 	auto AimOffsetDelteRot = (PlayerCameraComp->GetComponentRotation()-GetActorRotation());
 	AimOffsetDelteRot.Normalize();
