@@ -256,6 +256,10 @@ void ATPCharacterBase::Tick(float DeltaTime)
 	}
 	else if(bMoveInputX || bMoveInputFlipX || bMoveInputY || bMoveInputFlipY)
 	{
+		if(bMoveInputX && bMoveInputFlipX)
+			MoveAxis.X = 0;
+		if(bMoveInputY && bMoveInputFlipY)
+			MoveAxis.Y = 0;
 		UpdateMovementSpeed();
 		AddMovementInput( LastMovementX , MoveAxis.X);
 		AddMovementInput( LastMovementY , MoveAxis.Y);
