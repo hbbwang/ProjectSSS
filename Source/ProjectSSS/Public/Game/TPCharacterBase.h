@@ -31,12 +31,6 @@ public:
 	ATPCharacterBase();
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	float SpeedBeginRun;
-
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
-	float SpeedEndRun;
-
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
 	float WalkSpeed;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
@@ -75,6 +69,15 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	float CurrentMoveSpeed;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	float BeginWalkSpeed;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	float BeginRunSpeed;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input")
+	float StopMovementSpeed;
+
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	bool bAim;
 
@@ -111,6 +114,10 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")
 	UAnimMontage* Rifle_PackUp;
 
+	FVector LastMovementX;
+	FVector LastMovementY;
+	float TargetMovementSpeed;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

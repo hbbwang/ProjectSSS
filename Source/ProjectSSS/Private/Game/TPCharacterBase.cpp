@@ -16,9 +16,7 @@
 #include "Subsystem/TPWorldSubsystem.h"
 
 // Sets default values
-ATPCharacterBase::ATPCharacterBase():
-	SpeedBeginRun(12),
-	SpeedEndRun(25)
+ATPCharacterBase::ATPCharacterBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -62,6 +60,9 @@ ATPCharacterBase::ATPCharacterBase():
 	WalkSpeedWithWeapon = 250.0f;
 	RunSpeedWithWeapon = 450.0f;
 	AimWalkSpeedWithWeapon = 100.0f;
+	StopMovementSpeed = 600.0f;
+	BeginWalkSpeed = 400.0f;
+	BeginRunSpeed = 600.0f;
 }
 
 void ATPCharacterBase::OnConstruction(const FTransform& Transform)
@@ -101,10 +102,11 @@ void ATPCharacterBase::BeginPlay()
 void ATPCharacterBase::InputEvent_MoveForward(const FInputActionValue& value)
 {
 	auto moveVector = value.Get<float>();
+	MoveAxis.Y = moveVector;
 	if(moveVector > 0.025f || moveVector < -0.025f )
 	{
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
-		AddMovementInput( rot.Vector() , moveVector);
+		LastMovementY = rot.Vector() ;
 		bMoveInputY = true;
 	}
 	else
@@ -116,10 +118,11 @@ void ATPCharacterBase::InputEvent_MoveForward(const FInputActionValue& value)
 void ATPCharacterBase::InputEvent_Backward(const FInputActionValue& value)
 {
 	auto moveVector = value.Get<float>();
+	MoveAxis.Y = moveVector;
 	if(moveVector < -0.005f )
 	{
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
-		AddMovementInput( rot.Vector() , moveVector);
+		LastMovementY = rot.Vector() ;
 		bMoveInputFlipY = true;
 	}
 	else
@@ -131,10 +134,11 @@ void ATPCharacterBase::InputEvent_Backward(const FInputActionValue& value)
 void ATPCharacterBase::InputEvent_MoveRightward(const FInputActionValue& value)
 {
 	auto moveVector = value.Get<float>();
+	MoveAxis.X = moveVector;
 	if(moveVector > 0.005f )
 	{
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
-		AddMovementInput( FRotationMatrix(rot).GetScaledAxis(EAxis::Y) , moveVector);
+		LastMovementX = FRotationMatrix(rot).GetScaledAxis(EAxis::Y) ;
 		bMoveInputX = true;
 	}
 	else
@@ -146,10 +150,11 @@ void ATPCharacterBase::InputEvent_MoveRightward(const FInputActionValue& value)
 void ATPCharacterBase::InputEvent_MoveLeftward(const FInputActionValue& value)
 {
 	auto moveVector = value.Get<float>();
+	MoveAxis.X = moveVector;
 	if(moveVector < -0.005f )
 	{
 		FRotator rot = FRotator(0,GetControlRotation().Yaw,0);
-		AddMovementInput( FRotationMatrix(rot).GetScaledAxis(EAxis::Y) , moveVector);
+		LastMovementX = FRotationMatrix(rot).GetScaledAxis(EAxis::Y) ;
 		bMoveInputFlipX = true;
 	}
 	else
@@ -224,6 +229,7 @@ void ATPCharacterBase::Tick(float DeltaTime)
 		result.Normalize();
 		InputDeltaAngle = result.Yaw;
 	}
+	
 	CurrentMoveSpeed = GetCharacterMovement()->Velocity.Length();
 
 #if WITH_EDITOR
@@ -240,10 +246,35 @@ void ATPCharacterBase::Tick(float DeltaTime)
 	AimOffsetDelteRot += AimOffsetRotBias;
 	AimOffsetRot = FMath::RInterpTo(AimOffsetRot,AimOffsetDelteRot,DeltaTime,AimOffsetRotSpeed);
 
-	UpdateMovementSpeed();
-
-	MoveAxis.X = (float)bMoveInputX - (float)bMoveInputFlipX ;
-	MoveAxis.Y = (float)bMoveInputY - (float)bMoveInputFlipY ;
+	// MoveAxis.X = (float)bMoveInputX - (float)bMoveInputFlipX ;
+	// MoveAxis.Y = (float)bMoveInputY - (float)bMoveInputFlipY ;
+	
+	if(!bMoveInputX&&!bMoveInputFlipX&&!bMoveInputY&&!bMoveInputFlipY&&CurrentMoveSpeed>10)
+	{
+		AddMovementInput( GetActorForwardVector() , 1);
+		GetCharacterMovement()->MaxWalkSpeed -= DeltaTime * StopMovementSpeed;
+	}
+	else if(bMoveInputX || bMoveInputFlipX || bMoveInputY || bMoveInputFlipY)
+	{
+		UpdateMovementSpeed();
+		AddMovementInput( LastMovementX , MoveAxis.X);
+		AddMovementInput( LastMovementY , MoveAxis.Y);
+		if(!FMath::IsNearlyEqual(GetCharacterMovement()->MaxWalkSpeed,TargetMovementSpeed,0.001f))
+		{
+			if(bRun)
+			{
+				GetCharacterMovement()->MaxWalkSpeed = FMath::FInterpTo(GetCharacterMovement()->MaxWalkSpeed,TargetMovementSpeed,DeltaTime,BeginRunSpeed);
+			}
+			else
+			{
+				GetCharacterMovement()->MaxWalkSpeed = FMath::FInterpTo(GetCharacterMovement()->MaxWalkSpeed,TargetMovementSpeed,DeltaTime,BeginWalkSpeed);
+			}
+		}
+	}
+	else if(CurrentMoveSpeed < 10)
+	{
+		MoveAxis  = FVector2D(0) ;
+	}
 }
 
 // Called to bind functionality to input
@@ -328,27 +359,27 @@ void ATPCharacterBase::UpdateMovementSpeed()
 		{
 			if(bAim)
 			{
-				GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeedWithWeapon;
+				TargetMovementSpeed = AimWalkSpeedWithWeapon;
 			}
 			else
 			{
-				GetCharacterMovement()->MaxWalkSpeed = WalkSpeedWithWeapon;
+				TargetMovementSpeed = WalkSpeedWithWeapon;
 			}
 		}
 		else
 		{
-			GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+			TargetMovementSpeed = WalkSpeed;
 		}
 	}
 	else
 	{
 		if(CurrentWeapon)
 		{
-			GetCharacterMovement()->MaxWalkSpeed = RunSpeedWithWeapon;
+			TargetMovementSpeed = RunSpeedWithWeapon;
 		}
 		else
 		{
-			GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+			TargetMovementSpeed = RunSpeed;
 		}
 	}
 }
