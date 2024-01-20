@@ -50,6 +50,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	FVector2D MoveAxis;
+	FVector2D InputMoveX;
+	FVector2D InputMoveY;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	bool bMoveInputX;
