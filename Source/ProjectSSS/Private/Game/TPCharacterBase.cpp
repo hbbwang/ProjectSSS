@@ -64,6 +64,8 @@ ATPCharacterBase::ATPCharacterBase()
 	BeginWalkSpeed = 2.5f;
 	BeginRunSpeed = 4.5f;
 	TargetMovementSpeed = 0;
+
+	MinAimTurnSpeed = 0.5f;
 }
 
 void ATPCharacterBase::OnConstruction(const FTransform& Transform)
@@ -243,21 +245,17 @@ void ATPCharacterBase::Tick(float DeltaTime)
 		InputEvent_Aim(value);
 	}
 #endif
-
-	auto AimOffsetDelteRot = (PlayerCameraComp->GetComponentRotation()-GetActorRotation());
-	AimOffsetDelteRot.Normalize();
-	AimOffsetDelteRot += AimOffsetRotBias;
-	AimOffsetRot = FMath::RInterpTo(AimOffsetRot,AimOffsetDelteRot,DeltaTime,AimOffsetRotSpeed);
-
+	
 	// MoveAxis.X = (float)bMoveInputX - (float)bMoveInputFlipX ;
 	// MoveAxis.Y = (float)bMoveInputY - (float)bMoveInputFlipY ;
 	
 	if(!bMoveInputX&&!bMoveInputFlipX&&!bMoveInputY&&!bMoveInputFlipY&&CurrentMoveSpeed>10)
 	{
-		AddMovementInput( GetActorForwardVector() , 1);
+		AddMovementInput( GetActorForwardVector() , FMath::Clamp(CurrentMoveSpeed,0,1));
 		GetCharacterMovement()->MaxWalkSpeed -= DeltaTime * StopMovementSpeed;
 	}
 	else if(bMoveInputX || bMoveInputFlipX || bMoveInputY || bMoveInputFlipY)
+	//if(bMoveInputX || bMoveInputFlipX || bMoveInputY || bMoveInputFlipY)
 	{
 		MoveAxis.X = InputMoveX.X + InputMoveX.Y;
 		MoveAxis.Y = InputMoveY.X + InputMoveY.Y;
@@ -286,6 +284,35 @@ void ATPCharacterBase::Tick(float DeltaTime)
 		TargetMovementSpeed = 0;
 		GetCharacterMovement()->MaxWalkSpeed = TargetMovementSpeed;
 	}
+
+	if(FMath::Abs(AimOffsetRot.Yaw)>65.0f || bMoveInputX || bMoveInputFlipX || bMoveInputY || bMoveInputFlipY)
+	{
+		AimTurnRot = FRotationMatrix::MakeFromX(PlayerCameraComp->GetForwardVector()).Rotator();
+	}
+	
+	// if(CurrentWeapon && bAim)
+ //    {
+ //    	// if(!FMath::IsNearlyEqual(AimTurnRot.Yaw,GetActorRotation().Yaw,0.05f))
+ //    	// {
+ //    	// 	auto newRot = GetActorRotation();
+ //    	// 	newRot.Yaw = AimTurnRot.Yaw;
+ //    	// 	SetActorRotation(FMath::RInterpTo(GetActorRotation() , newRot , GetWorld()->GetDeltaSeconds(),FMath::Max(MinAimTurnSpeed, FMath::Abs(AimOffsetRot.Yaw/10.0f) )));
+ //    	// }
+ //    	// else
+ //    	// {
+ //    	// 	bAimTurn = false;
+ //    	// }
+	// 	auto newRot = GetActorRotation();
+	// 	newRot.Yaw = AimTurnRot.Yaw;
+	// 	SetActorRotation(newRot);
+ //    }
+	
+	auto AimOffsetDelteRot = (PlayerCameraComp->GetComponentRotation()-GetActorRotation());
+	AimOffsetDelteRot.Normalize();
+	AimOffsetDelteRot += AimOffsetRotBias;
+	//AimOffsetRot = FMath::RInterpTo(AimOffsetRot,AimOffsetDelteRot,DeltaTime,AimOffsetRotSpeed);
+	AimOffsetRot = AimOffsetDelteRot;
+	
 }
 
 // Called to bind functionality to input

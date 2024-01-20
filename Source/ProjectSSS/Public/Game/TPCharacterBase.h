@@ -86,6 +86,12 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	bool bFire;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input",meta=(ToolTip="角色瞄准时的水平旋转速度"))
+	float MinAimTurnSpeed;
+	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	FRotator AimTurnRot;
+	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	FRotator AimOffsetRot;
 
