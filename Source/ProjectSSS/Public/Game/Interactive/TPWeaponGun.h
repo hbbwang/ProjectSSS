@@ -42,6 +42,8 @@ public:
 	virtual void UnEquip(ATPWeaponBase* newWeapon)override;
 	
 	virtual void PickUp(class ATPCharacterBase* weaponOwner)override;
+
+	virtual void AttachWeaponToCharacter(bool bLeft = false)override;
 	
 protected:
 	// Called when the game starts or when spawned

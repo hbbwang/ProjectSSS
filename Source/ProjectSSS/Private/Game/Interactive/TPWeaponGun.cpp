@@ -72,8 +72,9 @@ void ATPWeaponGun::PickUp(ATPCharacterBase* weaponOwner)
 	Weapon->SetSimulatePhysics(false);
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	this->SetActorHiddenInGame(false);
-	Weapon->AttachToComponent(weaponOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("RHand"));
-	Weapon->SetRelativeTransform(WeaponEquipTransform);
+	// Weapon->AttachToComponent(weaponOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("RHand"));
+	// Weapon->SetRelativeTransform(WeaponEquipTransform);
+	AttachWeaponToCharacter(InteractiveOwner->bFlipAnimation);
 	//play equip anim
 	float AnimLength= 0.001f;
 	if(weaponOwner->Rifle_Equip)
@@ -105,6 +106,30 @@ void ATPWeaponGun::Drop(FVector dropLocation, FRotator Rot)
 	bOnBack = false;
 }
 
+void ATPWeaponGun::AttachWeaponToCharacter(bool bLeft)
+{
+	if(InteractiveOwner)
+	{
+		if(bLeft)
+		{
+			Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("LHand"));
+
+			auto equipTran = WeaponEquipTransform;
+			auto equipPos = -equipTran.GetLocation();
+			equipTran.SetLocation(equipPos);
+			auto equipRot = equipTran.GetRotation().Rotator();
+			equipRot.Roll += 180.0f;
+			equipTran.SetRotation(equipRot.Quaternion());
+			Weapon->SetRelativeTransform(equipTran);
+		}
+		else
+		{
+			Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("RHand"));
+			Weapon->SetRelativeTransform(WeaponEquipTransform);
+		}
+	}
+}
+
 void ATPWeaponGun::BeginPlay()
 {
 	Super::BeginPlay();
@@ -119,6 +144,7 @@ void ATPWeaponGun::OnConstruction(const FTransform& Transform)
 void ATPWeaponGun::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	
 }
 #endif
 

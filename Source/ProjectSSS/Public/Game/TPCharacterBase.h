@@ -91,12 +91,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	bool bFire;
-
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Input",meta=(ToolTip="角色瞄准时的水平旋转速度"))
-	float MinAimTurnSpeed;
-	
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
-	FRotator AimTurnRot;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	FRotator AimOffsetRot;
@@ -127,6 +121,9 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")
 	UAnimMontage* Rifle_PackUp;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Animation")
+	bool bFlipAnimation;
 
 	FVector LastMovementX;
 	FVector LastMovementY;
@@ -176,6 +173,10 @@ protected:
 	class UInputAction* InputFire;
 	void InputEvent_Fire(const FInputActionValue& value);
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Input")
+	class UInputAction* InputChangeAimDirection;
+	void InputEvent_ChangeAimDirection(const FInputActionValue& value);
+
 #pragma  endregion 
 
 private:
@@ -216,12 +217,23 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void DropWeapon(class ATPWeaponBase* weapon);
+	
+	void FlipAnimation(bool bLeft = false);
 
 #if WITH_EDITOR
+	
 	UFUNCTION(BlueprintCallable,Exec)
 	void HoldAimState();
+	
 	bool bHoldAimState;
 #endif
+
+	UFUNCTION(BlueprintCallable,Exec)
+	void ChangeAimDirection(int bLeft = 0)
+	{
+		bFlipAnimation = (bool)bLeft;
+		FlipAnimation(bFlipAnimation);
+	}
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Weapon")
 	TArray<class ATPWeaponBase*> Weapons;

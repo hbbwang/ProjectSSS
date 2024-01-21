@@ -11,9 +11,12 @@
 ATPWeaponBase::ATPWeaponBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComp"));
+	SetRootComponent(Root);
 	
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	SetRootComponent(Weapon);
+	Weapon->SetupAttachment(Root);
 	Weapon->SetRelativeLocation(FVector(0,0,0));
 	Weapon->SetRelativeRotation(FRotator(0,0,0));
 	Weapon->SetSimulatePhysics(true);
@@ -27,17 +30,17 @@ ATPWeaponBase::ATPWeaponBase()
 	Weapon->BodyInstance.bLockYTranslation = 1;
 
 	LeftHandTran = CreateDefaultSubobject<USceneComponent>(TEXT("LeftHandTran"));
-	LeftHandTran->SetupAttachment(Weapon);
+	LeftHandTran->SetupAttachment(Root);
 	
 	RightHandTran = CreateDefaultSubobject<USceneComponent>(TEXT("RightHandTran"));
-	RightHandTran->SetupAttachment(Weapon);
+	RightHandTran->SetupAttachment(Root);
 	RightHandTran->SetRelativeRotation(FRotator(0,-90,0));
 
 	LeftHandTran_Aim = CreateDefaultSubobject<USceneComponent>(TEXT("LeftHandTran_Aim"));
-	LeftHandTran_Aim->SetupAttachment(Weapon);
+	LeftHandTran_Aim->SetupAttachment(Root);
 	
 	RightHandTran_Aim = CreateDefaultSubobject<USceneComponent>(TEXT("RightHandTran_Aim"));
-	RightHandTran_Aim->SetupAttachment(Weapon);
+	RightHandTran_Aim->SetupAttachment(Root);
 	RightHandTran_Aim->SetRelativeRotation(FRotator(0,-90,0));
 	
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard(Editor Only)"));

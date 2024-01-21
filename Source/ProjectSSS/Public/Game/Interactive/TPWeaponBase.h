@@ -47,6 +47,8 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="右手 手肘朝向的位置"))
 	FVector JointTargetLocation_RightHand;
+
+	virtual void AttachWeaponToCharacter(bool bLeft = false){}
 	
 protected:
 	// Called when the game starts or when spawned
@@ -60,6 +62,9 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
 	bool bWeaponActive;
+
+	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
+	class USceneComponent* Root;
 	
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Weapon",meta=(AllowPrivateAccess="true"))
 	class USkeletalMeshComponent* Weapon;

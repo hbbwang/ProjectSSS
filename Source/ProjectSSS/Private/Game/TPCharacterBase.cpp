@@ -30,7 +30,7 @@ ATPCharacterBase::ATPCharacterBase()
 	PlayerCameraSpringArmComp->CameraRotationLagSpeed = 15.0f;
 	PlayerCameraSpringArmComp->CameraLagMaxDistance = 10.0f;
 	PlayerCameraSpringArmComp->TargetArmLength = 120.0f;
-	PlayerCameraSpringArmComp->SocketOffset = FVector(0,30.0f,80.0f);
+	FlipAnimation(bFlipAnimation);
 	
 	PlayerCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	PlayerCameraComp->SetupAttachment(PlayerCameraSpringArmComp);
@@ -64,19 +64,22 @@ ATPCharacterBase::ATPCharacterBase()
 	BeginWalkSpeed = 2.5f;
 	BeginRunSpeed = 4.5f;
 	TargetMovementSpeed = 0;
-
-	MinAimTurnSpeed = 0.5f;
+	
+	bFlipAnimation = false;
 }
 
 void ATPCharacterBase::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
+	
 	auto newLocation = GetMesh()->GetRelativeLocation();
 	newLocation.Z = -GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	GetMesh()->SetRelativeLocation(newLocation);
+	
 	auto newRotation = GetMesh()->GetRelativeRotation();
 	newRotation.Yaw = -90.0f;
 	GetMesh()->SetRelativeRotation(newRotation);
+
 }
 
 void ATPCharacterBase::SpawnWeapon(UClass* weaponClass)
@@ -88,7 +91,8 @@ void ATPCharacterBase::SpawnWeapon(UClass* weaponClass)
 // Called when the game starts or when spawned
 void ATPCharacterBase::BeginPlay()
 {
-	Super::BeginPlay();
+	FlipAnimation(bFlipAnimation);
+	
 	PlayerController = Cast<APlayerController>(Controller);
 	//Add Input Mapping Context
 	if (PlayerController)
@@ -102,6 +106,8 @@ void ATPCharacterBase::BeginPlay()
 	WorldSubsystem = GetWorld()->GetSubsystem<UTPWorldSubsystem>();
 
 	TargetMovementSpeed = 0;
+	
+	Super::BeginPlay();
 }
 
 void ATPCharacterBase::InputEvent_MoveForward(const FInputActionValue& value)
@@ -222,6 +228,18 @@ void ATPCharacterBase::InputEvent_Fire(const FInputActionValue& value)
 	}
 }
 
+void ATPCharacterBase::InputEvent_ChangeAimDirection(const FInputActionValue& value)
+{
+	if(bFlipAnimation)
+	{
+		ChangeAimDirection(0);
+	}
+	else
+	{
+		ChangeAimDirection(1);
+	}
+}
+
 // Called every frame
 void ATPCharacterBase::Tick(float DeltaTime)
 {
@@ -287,31 +305,12 @@ void ATPCharacterBase::Tick(float DeltaTime)
 		TargetMovementSpeed = 0;
 		GetCharacterMovement()->MaxWalkSpeed = TargetMovementSpeed;
 	}
-
-	//if(FMath::Abs(AimOffsetRot.Yaw)>65.0f || bMoveInputX || bMoveInputFlipX || bMoveInputY || bMoveInputFlipY)
-	{
-		AimTurnRot = FRotationMatrix::MakeFromX(PlayerCameraComp->GetForwardVector()).Rotator();
-	}
-	
-	if(CurrentWeapon && bAim)
-    {
-    	if(!FMath::IsNearlyEqual(AimTurnRot.Yaw,GetActorRotation().Yaw,0.05f))
-    	{
-    		auto newRot = GetActorRotation();
-    		newRot.Yaw = AimTurnRot.Yaw;
-    		SetActorRotation(FMath::RInterpTo(GetActorRotation() , newRot , GetWorld()->GetDeltaSeconds(),MinAimTurnSpeed));
-    	}
-		// auto newRot = GetActorRotation();
-		// newRot.Yaw = AimTurnRot.Yaw;
-		// SetActorRotation(newRot);
-    }
 	
 	auto AimOffsetDelteRot = (PlayerCameraComp->GetComponentRotation()-GetActorRotation());
 	AimOffsetDelteRot.Normalize();
 	AimOffsetDelteRot += AimOffsetRotBias;
 	//AimOffsetRot = FMath::RInterpTo(AimOffsetRot,AimOffsetDelteRot,DeltaTime,AimOffsetRotSpeed);
 	AimOffsetRot = AimOffsetDelteRot;
-	
 }
 
 // Called to bind functionality to input
@@ -344,6 +343,8 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	//Aim
 	enhancedInputComp->BindAction(InputFire,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_Fire);
 	enhancedInputComp->BindAction(InputFire,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Fire);
+	//Change aim direction
+	enhancedInputComp->BindAction(InputChangeAimDirection,ETriggerEvent::Started,this,&ATPCharacterBase::InputEvent_ChangeAimDirection);
 	
 	// //动态修改按键映射模板
 	// {
@@ -476,6 +477,22 @@ void ATPCharacterBase::DropWeapon(ATPWeaponBase* weapon)
 	weapon->Drop(weapon->GetInteractiveLocation(),FRotator(0,0,0));
 	Weapons.Remove(weapon);
 	
+}
+
+void ATPCharacterBase::FlipAnimation(bool bLeft)
+{
+	if(bLeft)
+	{
+		PlayerCameraSpringArmComp->SocketOffset = FVector(10,-60.0f,0.0f);
+	}
+	else
+	{
+		PlayerCameraSpringArmComp->SocketOffset = FVector(10,60.0f,0.0f);
+	}
+	if(CurrentWeapon)
+	{
+		CurrentWeapon->AttachWeaponToCharacter(bLeft);
+	}
 }
 
 #if WITH_EDITOR
