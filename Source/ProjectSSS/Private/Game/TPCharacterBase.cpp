@@ -170,7 +170,8 @@ void ATPCharacterBase::InputEvent_MoveLeftward(const FInputActionValue& value)
 
 void ATPCharacterBase::InputEvent_Run(const FInputActionValue& value)
 {
-	bRun = value.Get<bool>();
+	bRunInput = value.Get<bool>();
+	bRun = bRunInput;
 	if(bAim)
 	{
 		bRun = false;
@@ -184,8 +185,10 @@ void ATPCharacterBase::InputEvent_Run(const FInputActionValue& value)
 void ATPCharacterBase::InputEvent_LookAxis2D(const FInputActionValue& value)
 {
 	auto moveVector = value.Get<FVector2D>();
+	LookAxis = moveVector;
 	AddControllerYawInput(moveVector.X);
 	AddControllerPitchInput(-moveVector.Y);
+	
 	//GEngine->AddOnScreenDebugMessage(0,0,FColor::Blue,moveVector.ToString());
 }
 
@@ -328,6 +331,7 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	enhancedInputComp->BindAction(InputMoveLeft,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_MoveLeftward);
 	//Look at
 	enhancedInputComp->BindAction(InputLookAxis2D,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_LookAxis2D);
+	enhancedInputComp->BindAction(InputLookAxis2D,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_LookAxis2D);
 	//Run
 	enhancedInputComp->BindAction(InputRun,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_Run);
 	enhancedInputComp->BindAction(InputRun,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Run);
