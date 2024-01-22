@@ -22,7 +22,8 @@ ATPWeaponBase::ATPWeaponBase()
 	Weapon->SetSimulatePhysics(true);
 	Weapon->SetCollisionProfileName(TEXT("Interactive"));
 	Weapon->SetGenerateOverlapEvents(true);
-
+	Weapon->SetReceivesDecals(false);
+	
 	Weapon->BodyInstance.bLockXRotation = 1;
 	Weapon->BodyInstance.bLockYRotation = 1;
 	Weapon->BodyInstance.bLockZRotation = 1;
@@ -48,6 +49,12 @@ ATPWeaponBase::ATPWeaponBase()
 	Billboard->bIsEditorOnly = true;
 	Billboard->bIsScreenSizeScaled = true;
 	Billboard->SetRelativeScale3D(FVector(0.75f,0.75f,0.75f));
+
+	BulletCount = 1;
+	MinBulletSpreadSize = 0.0f;
+	BulletSpreadAdditiveSize = 1.0f;
+	FireInterval = 0.15f;
+	BulletSpreadSubtractSpeed = 3.0f;
 }
 
 FVector ATPWeaponBase::GetInteractiveLocation()

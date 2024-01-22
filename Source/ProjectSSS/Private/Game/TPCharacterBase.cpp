@@ -21,6 +21,8 @@ ATPCharacterBase::ATPCharacterBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	GetMesh()->SetReceivesDecals(false);
+	
 	PlayerCameraSpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("PlayerCameraSpringArm"));
 	PlayerCameraSpringArmComp->SetupAttachment(RootComponent);
 	PlayerCameraSpringArmComp->bUsePawnControlRotation = true;
@@ -66,6 +68,7 @@ ATPCharacterBase::ATPCharacterBase()
 	TargetMovementSpeed = 0;
 	
 	bFlipAnimation = false;
+	FireCount = -1;
 }
 
 void ATPCharacterBase::OnConstruction(const FTransform& Transform)
@@ -212,6 +215,7 @@ void ATPCharacterBase::InputEvent_Aim(const FInputActionValue& value)
 {
 	auto bTrigger = value.Get<bool>();
 	bAim = bTrigger;
+	bInputAim = bTrigger;
 	if(AimInputTrigger.IsBound())
 	{
 		AimInputTrigger.Broadcast(bAim);
@@ -222,6 +226,44 @@ void ATPCharacterBase::InputEvent_Fire(const FInputActionValue& value)
 {
 	auto bTrigger = value.Get<bool>();
 	bFire = bTrigger;
+	//同时触发瞄准
+	if(bInputAim && !bFire)
+	{
+		bAim = true;
+	}
+	else
+	{
+		bAim = bFire;
+	}
+
+	if(CurrentWeapon)
+	{
+		if(CurrentWeapon->CurrentWeaponFiringMode == EWeaponFiringMode::WFM_Automatic)
+		{
+			if(bFire && FireCount ==-1)
+			{
+				CurrentFireInterval = CurrentWeapon->FireInterval;
+				FireCount = 0;
+			}
+		}
+		else if(CurrentWeapon->CurrentWeaponFiringMode == EWeaponFiringMode::WFM_Single)
+		{
+			if(bFire && FireCount ==-1)
+			{
+				FireCount = 0;
+				CurrentFireInterval = CurrentWeapon->FireInterval;
+			} 
+		}
+		else if(CurrentWeapon->CurrentWeaponFiringMode == EWeaponFiringMode::WFM_Triple)
+		{
+			if(bFire && FireCount ==-1)
+			{
+				FireCount = 0;
+				CurrentFireInterval = CurrentWeapon->FireInterval;
+			} 
+		}
+	}
+	
 	if(FireInputTrigger.IsBound())
 	{
 		FireInputTrigger.Broadcast(bAim);
@@ -267,9 +309,6 @@ void ATPCharacterBase::Tick(float DeltaTime)
 	}
 #endif
 	
-	// MoveAxis.X = (float)bMoveInputX - (float)bMoveInputFlipX ;
-	// MoveAxis.Y = (float)bMoveInputY - (float)bMoveInputFlipY ;
-	
 	if(!bMoveInputX&&!bMoveInputFlipX&&!bMoveInputY&&!bMoveInputFlipY&&CurrentMoveSpeed>10)
 	{
 		AddMovementInput( GetActorForwardVector() , FMath::Clamp(CurrentMoveSpeed,0,1));
@@ -311,6 +350,92 @@ void ATPCharacterBase::Tick(float DeltaTime)
 	AimOffsetDelteRot += AimOffsetRotBias;
 	//AimOffsetRot = FMath::RInterpTo(AimOffsetRot,AimOffsetDelteRot,DeltaTime,AimOffsetRotSpeed);
 	AimOffsetRot = AimOffsetDelteRot;
+
+	FVector targetViewSocketOffset;
+	if(bFlipAnimation)
+	{
+		targetViewSocketOffset = FVector(10.0f,-60.0f,0.0f);
+	}
+	else
+	{
+		targetViewSocketOffset = FVector(10.0f,60.0f,0.0f);
+	}
+	if(!FMath::IsNearlyEqual(PlayerCameraSpringArmComp->SocketOffset.Y,targetViewSocketOffset.Y,0.1f))
+	{
+		PlayerCameraSpringArmComp->SocketOffset = FMath::VInterpTo(PlayerCameraSpringArmComp->SocketOffset,targetViewSocketOffset,DeltaTime,25.0f);
+	}
+	
+	//Fire
+	if(CurrentWeapon)
+	{
+		if(CurrentWeaponBulletSpreadSize <= CurrentWeapon->MinBulletSpreadSize)
+		{
+			CurrentWeaponBulletSpreadSize = CurrentWeapon->MinBulletSpreadSize;
+		}
+		if(CurrentWeapon->BulletClass && CurrentWeapon->IsWeaponActive())
+		{
+			if(CurrentWeapon->CurrentWeaponFiringMode == EWeaponFiringMode::WFM_Automatic && bFire)
+			{
+				CurrentFireInterval+=DeltaTime;
+				if(CurrentFireInterval >= CurrentWeapon->FireInterval)
+				{
+					CurrentFireInterval = 0;
+					FireCount = -1;
+					for(int i = 0; i < CurrentWeapon->BulletCount ; i++)
+					{
+						SpawnBullet();
+					}
+					CurrentWeaponBulletSpreadSize+=CurrentWeapon->BulletSpreadAdditiveSize;
+				}
+			}
+			else if(CurrentWeapon->CurrentWeaponFiringMode == EWeaponFiringMode::WFM_Single && FireCount >= 0)
+			{
+				CurrentFireInterval+=DeltaTime;
+				if(CurrentFireInterval >= CurrentWeapon->FireInterval)
+				{
+					CurrentFireInterval = 0;
+					if(FireCount>0)
+					{
+						FireCount = -1;
+					}
+					else
+					{
+						for(int i = 0; i < CurrentWeapon->BulletCount ; i++)
+						{
+							SpawnBullet();
+						}
+						CurrentWeaponBulletSpreadSize+=CurrentWeapon->BulletSpreadAdditiveSize;
+						FireCount++;
+					}
+				}
+			}
+			else if(CurrentWeapon->CurrentWeaponFiringMode == EWeaponFiringMode::WFM_Triple && FireCount >= 0)
+			{
+				CurrentFireInterval+=DeltaTime;
+				if(CurrentFireInterval >= CurrentWeapon->FireInterval)
+				{
+					CurrentFireInterval = 0;
+					if(FireCount >= 3)
+					{
+						FireCount = -1;
+					}
+					else
+					{
+						for(int i = 0; i < CurrentWeapon->BulletCount ; i++)
+						{
+							SpawnBullet();
+						}
+						FireCount ++;
+						CurrentWeaponBulletSpreadSize+=CurrentWeapon->BulletSpreadAdditiveSize;
+					}
+				}
+			}
+			if(CurrentWeaponBulletSpreadSize > CurrentWeapon->MinBulletSpreadSize)
+			{
+				CurrentWeaponBulletSpreadSize -= DeltaTime * CurrentWeapon->BulletSpreadSubtractSpeed;
+			}
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -341,7 +466,7 @@ void ATPCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	enhancedInputComp->BindAction(InputAim,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Aim);
 	//Fire
 	//Aim
-	enhancedInputComp->BindAction(InputFire,ETriggerEvent::Triggered,this,&ATPCharacterBase::InputEvent_Fire);
+	enhancedInputComp->BindAction(InputFire,ETriggerEvent::Started,this,&ATPCharacterBase::InputEvent_Fire);
 	enhancedInputComp->BindAction(InputFire,ETriggerEvent::Completed,this,&ATPCharacterBase::InputEvent_Fire);
 	//Change aim direction
 	enhancedInputComp->BindAction(InputChangeAimDirection,ETriggerEvent::Started,this,&ATPCharacterBase::InputEvent_ChangeAimDirection);
@@ -423,6 +548,37 @@ void ATPCharacterBase::UpdateMovementSpeed()
 	}
 }
 
+void ATPCharacterBase::SpawnBullet()
+{
+	if(CurrentWeapon && CurrentWeapon->BulletClass)
+	{
+		FTransform SpawnTransform = CurrentWeapon->GetWeaponComp()->GetSocketTransform("Bullet");
+		FHitResult result;
+		FCollisionObjectQueryParams objectQueryParams;
+		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
+		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldDynamic);
+		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);
+		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
+		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Vehicle);
+		FVector Dir = PlayerCameraComp->GetForwardVector();
+		if(GetWorld()->LineTraceSingleByObjectType(result,
+			PlayerCameraComp->GetComponentLocation(),
+			PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f,
+			objectQueryParams
+			))
+		{
+			Dir = (result.Location - PlayerCameraComp->GetComponentLocation());
+			Dir.Normalize();
+		}
+		float Xscale = FMath::RandRange(-1.0f,1.0f);
+		float Yscale = FMath::RandRange(-1.0f,1.0f);
+		Dir += CurrentWeaponBulletSpreadSize * PlayerCameraComp->GetRightVector() * Xscale * 0.01;
+		Dir += CurrentWeaponBulletSpreadSize * PlayerCameraComp->GetUpVector() * Yscale * 0.01; 
+		SpawnTransform.SetRotation(Dir.Rotation().Quaternion());
+		GetWorld()->SpawnActor(CurrentWeapon->BulletClass,&SpawnTransform);
+	}
+}
+
 void ATPCharacterBase::PickUpWeapon(AActor* weaponActor)
 {
 	if(bEquip || bPackUp)
@@ -481,14 +637,7 @@ void ATPCharacterBase::DropWeapon(ATPWeaponBase* weapon)
 
 void ATPCharacterBase::FlipAnimation(bool bLeft)
 {
-	if(bLeft)
-	{
-		PlayerCameraSpringArmComp->SocketOffset = FVector(10,-60.0f,0.0f);
-	}
-	else
-	{
-		PlayerCameraSpringArmComp->SocketOffset = FVector(10,60.0f,0.0f);
-	}
+	bFlipAnimation = bLeft;
 	if(CurrentWeapon)
 	{
 		CurrentWeapon->AttachWeaponToCharacter(bLeft);

@@ -90,7 +90,12 @@ public:
 	bool bAim;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
+	bool bInputAim;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	bool bFire;
+	
+	float CurrentFireInterval;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Input")
 	FRotator AimOffsetRot;
@@ -231,8 +236,7 @@ public:
 	UFUNCTION(BlueprintCallable,Exec)
 	void ChangeAimDirection(int bLeft = 0)
 	{
-		bFlipAnimation = (bool)bLeft;
-		FlipAnimation(bFlipAnimation);
+		FlipAnimation((bool)bLeft);
 	}
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Weapon")
@@ -250,11 +254,18 @@ public:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Weapon")
 	bool bPackUp;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="当前武器的弹丸扩散大小"))
+	float CurrentWeaponBulletSpreadSize;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Weapon")
+	int32 FireCount; 
 	
 protected:
 
 	virtual void Interactive();
 
 	void UpdateMovementSpeed();
-	
+
+	void SpawnBullet();
 };
