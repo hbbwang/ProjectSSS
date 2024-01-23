@@ -15,37 +15,37 @@ ATPWeaponBase::ATPWeaponBase()
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComp"));
 	SetRootComponent(Root);
 	
-	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	Weapon->SetupAttachment(Root);
-	Weapon->SetRelativeLocation(FVector(0,0,0));
-	Weapon->SetRelativeRotation(FRotator(0,0,0));
-	Weapon->SetSimulatePhysics(true);
-	Weapon->SetCollisionProfileName(TEXT("Interactive"));
-	Weapon->SetGenerateOverlapEvents(true);
-	Weapon->SetReceivesDecals(false);
+	WeaponComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponComp"));
+	WeaponComp->SetupAttachment(Root);
+	WeaponComp->SetRelativeLocation(FVector(0,0,0));
+	WeaponComp->SetRelativeRotation(FRotator(0,0,0));
+	WeaponComp->SetSimulatePhysics(true);
+	WeaponComp->SetCollisionProfileName(TEXT("Interactive"));
+	WeaponComp->SetGenerateOverlapEvents(true);
+	WeaponComp->SetReceivesDecals(false);
 	
-	Weapon->BodyInstance.bLockXRotation = 1;
-	Weapon->BodyInstance.bLockYRotation = 1;
-	Weapon->BodyInstance.bLockZRotation = 1;
-	Weapon->BodyInstance.bLockXTranslation = 1;
-	Weapon->BodyInstance.bLockYTranslation = 1;
+	WeaponComp->BodyInstance.bLockXRotation = 1;
+	WeaponComp->BodyInstance.bLockYRotation = 1;
+	WeaponComp->BodyInstance.bLockZRotation = 1;
+	WeaponComp->BodyInstance.bLockXTranslation = 1;
+	WeaponComp->BodyInstance.bLockYTranslation = 1;
 
 	LeftHandTran = CreateDefaultSubobject<USceneComponent>(TEXT("LeftHandTran"));
-	LeftHandTran->SetupAttachment(Root);
+	LeftHandTran->SetupAttachment(WeaponComp);
 	
 	RightHandTran = CreateDefaultSubobject<USceneComponent>(TEXT("RightHandTran"));
-	RightHandTran->SetupAttachment(Root);
+	RightHandTran->SetupAttachment(WeaponComp);
 	RightHandTran->SetRelativeRotation(FRotator(0,-90,0));
 
 	LeftHandTran_Aim = CreateDefaultSubobject<USceneComponent>(TEXT("LeftHandTran_Aim"));
-	LeftHandTran_Aim->SetupAttachment(Root);
+	LeftHandTran_Aim->SetupAttachment(WeaponComp);
 	
 	RightHandTran_Aim = CreateDefaultSubobject<USceneComponent>(TEXT("RightHandTran_Aim"));
-	RightHandTran_Aim->SetupAttachment(Root);
+	RightHandTran_Aim->SetupAttachment(WeaponComp);
 	RightHandTran_Aim->SetRelativeRotation(FRotator(0,-90,0));
 	
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard(Editor Only)"));
-	Billboard->SetupAttachment(Weapon);
+	Billboard->SetupAttachment(WeaponComp);
 	Billboard->bIsEditorOnly = true;
 	Billboard->bIsScreenSizeScaled = true;
 	Billboard->SetRelativeScale3D(FVector(0.75f,0.75f,0.75f));
@@ -57,11 +57,14 @@ ATPWeaponBase::ATPWeaponBase()
 	BulletSpreadSubtractSpeed = 3.0f;
 	StartGravityDistance = 10.0f;
 	GravityAdditiveSpeed = 0.5f;
+	BulletSpeedInit = 100.0f;
+	BulletPower = 10.0f;
+	BulletSizeChange = 50.0f;
 }
 
 FVector ATPWeaponBase::GetInteractiveLocation()
 {
-	return Weapon->GetComponentLocation();
+	return WeaponComp->GetComponentLocation();
 }
 
 // Called when the game starts or when spawned

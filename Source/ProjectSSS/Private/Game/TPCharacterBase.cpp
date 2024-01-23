@@ -15,6 +15,7 @@
 #include "Game/Interactive/TPWeaponBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerInput.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Subsystem/TPWorldSubsystem.h"
 
 // Sets default values
@@ -43,7 +44,7 @@ ATPCharacterBase::ATPCharacterBase()
 	InteractiveBox = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractiveBox"));
 	InteractiveBox->SetupAttachment(GetMesh());
 	InteractiveBox->SetBoxExtent(FVector(100,100,GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 1.1f));
-	InteractiveBox->SetCollisionProfileName("Interactive");
+	//InteractiveBox->SetCollisionProfileName("Interactive");
 	InteractiveBox->OnComponentBeginOverlap.RemoveDynamic(this,&ATPCharacterBase::InteractiveBeginOverlap);
 	InteractiveBox->OnComponentBeginOverlap.AddDynamic(this,&ATPCharacterBase::InteractiveBeginOverlap);
 	InteractiveBox->OnComponentEndOverlap.RemoveDynamic(this,&ATPCharacterBase::InteractiveEndOverlap);
@@ -90,6 +91,8 @@ void ATPCharacterBase::OnConstruction(const FTransform& Transform)
 void ATPCharacterBase::SpawnWeapon(UClass* weaponClass)
 {
 	auto newWeapon = GetWorld()->SpawnActor(weaponClass);
+	newWeapon->SetActorLocation(this->GetActorLocation());
+	
 	PickUpWeapon(newWeapon);
 }
 
@@ -575,7 +578,7 @@ void ATPCharacterBase::GetBulletSpawnTransform(FVector& Pos,FVector& Dir)
 	
 	Dir = PlayerCameraComp->GetForwardVector();
 	bool bHit = GetWorld()->LineTraceSingleByObjectType(result,
-		PlayerCameraComp->GetComponentLocation(),
+		trans.GetLocation(),
 		PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f,
 		objectQueryParams , queryParams
 		);
@@ -619,6 +622,9 @@ void ATPCharacterBase::SpawnBullet(FVector Pos,FVector Dir)
 			ATPBullet* bulletActor = static_cast<ATPBullet*>(actor);
 			bulletActor->StartGravityDistance = CurrentWeapon->StartGravityDistance;
 			bulletActor->GravityAdditiveSpeed = CurrentWeapon->GravityAdditiveSpeed;
+			bulletActor->GetProjectileMovementComponent()->InitialSpeed = CurrentWeapon->BulletSpeedInit * 100.0f;
+			bulletActor->BulletSizeChange = CurrentWeapon->BulletSizeChange;
+			bulletActor->BulletPower = CurrentWeapon->BulletPower * 0.01f;
 		};
 		GetWorld()->SpawnActor(CurrentWeapon->BulletClass,&SpawnTrans,spawnParameters);
 	}
@@ -701,6 +707,18 @@ void ATPCharacterBase::HoldAimState()
 		bHoldAimState = false;
 		FInputActionValue value = FInputActionValue(0.0f);
 		InputEvent_Aim(value);
+	}
+}
+
+void ATPCharacterBase::EnableBulletLineTraceDebug()
+{
+	if(!ATPBullet::bBulletLineTraceDebug)
+	{
+		ATPBullet::bBulletLineTraceDebug = true;
+	}
+	else
+	{
+		ATPBullet::bBulletLineTraceDebug = false;
 	}
 }
 #endif

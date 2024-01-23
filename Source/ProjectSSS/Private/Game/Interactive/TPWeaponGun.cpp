@@ -41,13 +41,13 @@ void ATPWeaponGun::UnEquip(ATPWeaponBase* newWeapon)
 		auto Index = InteractiveOwner->Weapons.Find(this);
 		if(Index == 0)
 		{
-			Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("BackWeapon"));
-			Weapon->SetRelativeTransform(WeaponBackTransform_Left);
+			WeaponComp->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("BackWeapon"));
+			WeaponComp->SetRelativeTransform(WeaponBackTransform_Left);
 		}
 		else
 		{
-			Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("BackWeapon"));
-			Weapon->SetRelativeTransform(WeaponBackTransform_Right);
+			WeaponComp->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("BackWeapon"));
+			WeaponComp->SetRelativeTransform(WeaponBackTransform_Right);
 		}
 		bOnBack = true;
 		if(newWeapon)
@@ -69,11 +69,11 @@ void ATPWeaponGun::PickUp(ATPCharacterBase* weaponOwner)
 	//Set owner
 	SetInteractiveOwner(weaponOwner);
 	//Change weapon state
-	Weapon->SetSimulatePhysics(false);
-	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WeaponComp->SetSimulatePhysics(false);
+	WeaponComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	this->SetActorHiddenInGame(false);
-	// Weapon->AttachToComponent(weaponOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("RHand"));
-	// Weapon->SetRelativeTransform(WeaponEquipTransform);
+	// WeaponComp->AttachToComponent(weaponOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("RHand"));
+	// WeaponComp->SetRelativeTransform(WeaponEquipTransform);
 	AttachWeaponToCharacter(InteractiveOwner->bFlipAnimation);
 	//play equip anim
 	float AnimLength= 0.001f;
@@ -95,11 +95,11 @@ void ATPWeaponGun::Drop(FVector dropLocation, FRotator Rot)
 {
 	Super::Drop(dropLocation,Rot);
 	//Change weapon state
-	Weapon->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-	Weapon->SetWorldLocation(dropLocation);
-	Weapon->SetWorldRotation(Rot);
-	Weapon->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Weapon->SetSimulatePhysics(true);
+	WeaponComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	WeaponComp->SetWorldLocation(dropLocation);
+	WeaponComp->SetWorldRotation(Rot);
+	WeaponComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	WeaponComp->SetSimulatePhysics(true);
 	this->SetActorHiddenInGame(false);
 	//Set owner
 	SetInteractiveOwner(nullptr);
@@ -112,7 +112,7 @@ void ATPWeaponGun::AttachWeaponToCharacter(bool bLeft)
 	{
 		if(bLeft)
 		{
-			Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("LHand"));
+			WeaponComp->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("LHand"));
 
 			auto equipTran = WeaponEquipTransform;
 			auto equipPos = -equipTran.GetLocation();
@@ -120,12 +120,12 @@ void ATPWeaponGun::AttachWeaponToCharacter(bool bLeft)
 			auto equipRot = equipTran.GetRotation().Rotator();
 			equipRot.Roll += 180.0f;
 			equipTran.SetRotation(equipRot.Quaternion());
-			Weapon->SetRelativeTransform(equipTran);
+			WeaponComp->SetRelativeTransform(equipTran);
 		}
 		else
 		{
-			Weapon->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("RHand"));
-			Weapon->SetRelativeTransform(WeaponEquipTransform);
+			WeaponComp->AttachToComponent(InteractiveOwner->GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("RHand"));
+			WeaponComp->SetRelativeTransform(WeaponEquipTransform);
 		}
 	}
 }

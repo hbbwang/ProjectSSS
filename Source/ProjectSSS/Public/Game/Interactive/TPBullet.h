@@ -25,15 +25,33 @@ public:
 	//重力增加速度
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Bullet")
 	float GravityAdditiveSpeed;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Component")
+	class UBoxComponent* RootCollision;
+
+	FVector LastPos;
+	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Bullet")
+	float BulletSizeChange;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Bullet")
+	float BulletPower;
+	
+	UFUNCTION(BlueprintCallable,Category="Component")
+	inline class UProjectileMovementComponent*GetProjectileMovementComponent()const
+	{
+		return ProjectileMovement;
+	}
+
+#if WITH_EDITOR
+	static bool bBulletLineTraceDebug;
+#endif
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
-	
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Component")
-	class UBoxComponent* RootCollision;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Component")
 	class UStaticMeshComponent* Mesh;
@@ -41,10 +59,10 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Component")
 	class UProjectileMovementComponent* ProjectileMovement;
 	
-	UFUNCTION()
-	void CollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void CollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
+	// UFUNCTION()
+	// void CollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	//
+	// UFUNCTION()
+	// void CollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	//
 };

@@ -231,6 +231,10 @@ public:
 	void HoldAimState();
 	
 	bool bHoldAimState;
+
+	UFUNCTION(BlueprintCallable,Category="Bullet",Exec)
+	void EnableBulletLineTraceDebug();
+
 #endif
 
 	UFUNCTION(BlueprintCallable,Exec)

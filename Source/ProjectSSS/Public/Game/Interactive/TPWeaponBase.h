@@ -32,7 +32,7 @@ public:
 	// Sets default values for this actor's properties
 	ATPWeaponBase();
 
-	inline class USkeletalMeshComponent*  GetWeaponComp()const{return Weapon;}
+	inline class USkeletalMeshComponent*  GetWeaponComp()const{return WeaponComp;}
 
 	UFUNCTION(BlueprintCallable,Category="Interactive")
 	virtual FVector GetInteractiveLocation() override;
@@ -64,7 +64,7 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="弹丸扩散 回复 的速度"))
 	float BulletSpreadSubtractSpeed;
 
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon")
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon",meta=(ToolTip="开火间隔"))
 	float FireInterval;
 
 	//有效射程
@@ -73,6 +73,17 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon",meta=(ToolTip="子弹飞行的重力0-1的增加速度"))
 	float GravityAdditiveSpeed;
+	
+	//膛速
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon",meta=(ToolTip="子弹飞行的速度/膛速(米)"))
+	float BulletSpeedInit;
+
+	//子弹动能
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon",meta=(ToolTip="子弹动能,主要针对开启物理状态的对象"))
+	float BulletPower;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon",meta=(ToolTip="子弹飞的越远,模型大小的增加幅度(只限玩家自己能看到)"))
+	float BulletSizeChange;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="武器在手上 的位置和旋转"))
 	FTransform WeaponEquipTransform;
@@ -114,7 +125,7 @@ protected:
 	class USceneComponent* Root;
 	
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Component",meta=(AllowPrivateAccess="true"))
-	class USkeletalMeshComponent* Weapon;
+	class USkeletalMeshComponent* WeaponComp;
 
 	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="Component",meta=(AllowPrivateAccess="true"))
 	class USceneComponent* LeftHandTran;
