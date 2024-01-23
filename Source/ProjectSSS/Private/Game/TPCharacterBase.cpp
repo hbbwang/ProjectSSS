@@ -7,9 +7,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
+#include "KismetTraceUtils.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Game/TPWorldManager.h"
+#include "Game/Interactive/TPBullet.h"
 #include "Game/Interactive/TPWeaponBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerInput.h"
@@ -381,9 +383,11 @@ void ATPCharacterBase::Tick(float DeltaTime)
 				{
 					CurrentFireInterval = 0;
 					FireCount = -1;
+					FVector Pos;FVector Dir;
+					GetBulletSpawnTransform(Pos,Dir);
 					for(int i = 0; i < CurrentWeapon->BulletCount ; i++)
 					{
-						SpawnBullet();
+						SpawnBullet(Pos,Dir);
 					}
 					CurrentWeaponBulletSpreadSize+=CurrentWeapon->BulletSpreadAdditiveSize;
 				}
@@ -400,9 +404,11 @@ void ATPCharacterBase::Tick(float DeltaTime)
 					}
 					else
 					{
+						FVector Pos;FVector Dir;
+                        GetBulletSpawnTransform(Pos,Dir);
 						for(int i = 0; i < CurrentWeapon->BulletCount ; i++)
 						{
-							SpawnBullet();
+							SpawnBullet(Pos,Dir);
 						}
 						CurrentWeaponBulletSpreadSize+=CurrentWeapon->BulletSpreadAdditiveSize;
 						FireCount++;
@@ -421,9 +427,11 @@ void ATPCharacterBase::Tick(float DeltaTime)
 					}
 					else
 					{
+						FVector Pos;FVector Dir;
+						GetBulletSpawnTransform(Pos,Dir);
 						for(int i = 0; i < CurrentWeapon->BulletCount ; i++)
 						{
-							SpawnBullet();
+							SpawnBullet(Pos,Dir);
 						}
 						FireCount ++;
 						CurrentWeaponBulletSpreadSize+=CurrentWeapon->BulletSpreadAdditiveSize;
@@ -548,34 +556,71 @@ void ATPCharacterBase::UpdateMovementSpeed()
 	}
 }
 
-void ATPCharacterBase::SpawnBullet()
+void ATPCharacterBase::GetBulletSpawnTransform(FVector& Pos,FVector& Dir)
+{
+	auto trans = CurrentWeapon->GetWeaponComp()->GetSocketTransform("Bullet");
+	FHitResult result;
+	FCollisionObjectQueryParams objectQueryParams;
+	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
+	queryParams.AddIgnoredActor(this);
+	TArray<AActor*> attachActors;
+	this->GetAttachedActors(attachActors);
+	queryParams.AddIgnoredActors(attachActors);
+	queryParams.bTraceComplex = true;//接触复杂碰撞
+	objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
+	objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldDynamic);
+	objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);
+	objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
+	objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Vehicle);
+	
+	Dir = PlayerCameraComp->GetForwardVector();
+	bool bHit = GetWorld()->LineTraceSingleByObjectType(result,
+		PlayerCameraComp->GetComponentLocation(),
+		PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f,
+		objectQueryParams , queryParams
+		);
+	if(bHit)
+	{
+		Dir = (result.Location - trans.GetLocation());
+		Dir.Normalize();
+	}
+	trans.SetRotation(Dir.Rotation().Quaternion());
+	
+	Pos = trans.GetLocation();
+//
+// #if ENABLE_DRAW_DEBUG
+// 	DrawDebugLineTraceSingle(GetWorld(),
+// 		PlayerCameraComp->GetComponentLocation(),
+// 		PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f,
+// 		EDrawDebugTrace::Type::ForDuration,
+// 		bHit, result, FLinearColor::Red, FLinearColor::Green, 3.0f);
+// #endif
+	
+}
+
+void ATPCharacterBase::SpawnBullet(FVector Pos,FVector Dir)
 {
 	if(CurrentWeapon && CurrentWeapon->BulletClass)
 	{
-		FTransform SpawnTransform = CurrentWeapon->GetWeaponComp()->GetSocketTransform("Bullet");
-		FHitResult result;
-		FCollisionObjectQueryParams objectQueryParams;
-		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
-		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldDynamic);
-		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);
-		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
-		objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Vehicle);
-		FVector Dir = PlayerCameraComp->GetForwardVector();
-		if(GetWorld()->LineTraceSingleByObjectType(result,
-			PlayerCameraComp->GetComponentLocation(),
-			PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f,
-			objectQueryParams
-			))
-		{
-			Dir = (result.Location - PlayerCameraComp->GetComponentLocation());
-			Dir.Normalize();
-		}
 		float Xscale = FMath::RandRange(-1.0f,1.0f);
 		float Yscale = FMath::RandRange(-1.0f,1.0f);
-		Dir += CurrentWeaponBulletSpreadSize * PlayerCameraComp->GetRightVector() * Xscale * 0.01;
-		Dir += CurrentWeaponBulletSpreadSize * PlayerCameraComp->GetUpVector() * Yscale * 0.01; 
-		SpawnTransform.SetRotation(Dir.Rotation().Quaternion());
-		GetWorld()->SpawnActor(CurrentWeapon->BulletClass,&SpawnTransform);
+		Dir += CurrentWeaponBulletSpreadSize * PlayerCameraComp->GetRightVector() * Xscale * 0.01f;
+		Dir += CurrentWeaponBulletSpreadSize * PlayerCameraComp->GetUpVector() * Yscale * 0.01f;
+		auto newRot = Dir.Rotation().Quaternion();
+		FTransform SpawnTrans;
+		SpawnTrans.SetLocation(Pos);
+		SpawnTrans.SetRotation(newRot);
+		FActorSpawnParameters spawnParameters;
+		spawnParameters.Owner = this;
+		spawnParameters.Instigator = GetInstigator();
+		spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		spawnParameters.CustomPreSpawnInitalization = [&](AActor*actor)
+		{
+			ATPBullet* bulletActor = static_cast<ATPBullet*>(actor);
+			bulletActor->StartGravityDistance = CurrentWeapon->StartGravityDistance;
+			bulletActor->GravityAdditiveSpeed = CurrentWeapon->GravityAdditiveSpeed;
+		};
+		GetWorld()->SpawnActor(CurrentWeapon->BulletClass,&SpawnTrans,spawnParameters);
 	}
 }
 

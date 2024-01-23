@@ -66,6 +66,13 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon")
 	float FireInterval;
+
+	//有效射程
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon",meta=(ToolTip="子弹的有效射程(米),超出射程之后开始计算重力"))
+	float StartGravityDistance;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon",meta=(ToolTip="子弹飞行的重力0-1的增加速度"))
+	float GravityAdditiveSpeed;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon",meta=(ToolTip="武器在手上 的位置和旋转"))
 	FTransform WeaponEquipTransform;

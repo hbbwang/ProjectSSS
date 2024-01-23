@@ -267,5 +267,7 @@ protected:
 
 	void UpdateMovementSpeed();
 
-	void SpawnBullet();
+	void GetBulletSpawnTransform(FVector& Pos,FVector& Dir);
+	
+	void SpawnBullet(FVector Pos,FVector Dir);
 };

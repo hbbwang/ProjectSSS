@@ -9,7 +9,7 @@
 ATPBullet::ATPBullet()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	//PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true;
 
 	RootCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("RootCollision"));
 	SetRootComponent(RootCollision);
@@ -24,10 +24,13 @@ ATPBullet::ATPBullet()
 	Mesh->SetCollisionProfileName("NoCollision");
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Mesh->SetReceivesDecals(false);
-	RootCollision->SetGenerateOverlapEvents(false);
+	Mesh->SetGenerateOverlapEvents(false);
 	
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 
+	ProjectileMovement->bRotationFollowsVelocity = true;
+	ProjectileMovement->ProjectileGravityScale = 0.0f;
+	
 	InitialLifeSpan = 5.0f;
 }
 
@@ -35,11 +38,27 @@ ATPBullet::ATPBullet()
 void ATPBullet::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	BeginPos = GetActorLocation();
+}
+
+void ATPBullet::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if(ProjectileMovement->ProjectileGravityScale < 1.0f)
+	{
+		if(FVector::Dist(GetActorLocation(),BeginPos) >= StartGravityDistance * 100.0f)
+		{
+			ProjectileMovement->ProjectileGravityScale += DeltaSeconds * GravityAdditiveSpeed * ProjectileMovement->Velocity.Length() * 0.01f;
+		}
+	}
+	else
+	{
+		PrimaryActorTick.bCanEverTick = false;
+	}
 }
 
 void ATPBullet::CollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
 	

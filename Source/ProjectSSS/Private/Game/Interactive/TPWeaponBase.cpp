@@ -55,6 +55,8 @@ ATPWeaponBase::ATPWeaponBase()
 	BulletSpreadAdditiveSize = 1.0f;
 	FireInterval = 0.15f;
 	BulletSpreadSubtractSpeed = 3.0f;
+	StartGravityDistance = 10.0f;
+	GravityAdditiveSpeed = 0.5f;
 }
 
 FVector ATPWeaponBase::GetInteractiveLocation()
