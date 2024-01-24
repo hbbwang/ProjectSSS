@@ -82,6 +82,10 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon",meta=(ToolTip="子弹动能,主要针对开启物理状态的对象"))
 	float BulletPower;
 	
+	//子弹伤害 + 衰减
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Bullet",meta=(ToolTip="子弹的伤害,和衰减曲线 (X=距离 / Y=伤害变化 ), 如果不设置,将默认基于30"))
+	UCurveFloat* DamageAttenuation;
+	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Weapon",meta=(ToolTip="子弹飞的越远,模型大小的增加幅度(只限玩家自己能看到)"))
 	float BulletSizeChange;
 	

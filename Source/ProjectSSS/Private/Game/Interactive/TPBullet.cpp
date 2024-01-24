@@ -72,6 +72,12 @@ void ATPBullet::Tick(float DeltaSeconds)
 		scale3D += FVector(0,DeltaSeconds * BulletSizeChange,DeltaSeconds * BulletSizeChange);
 		SetActorScale3D(scale3D);
 	}
+
+	float CurrentDamage = 30;
+	if(DamageAttenuation)
+	{
+		CurrentDamage = DamageAttenuation->GetFloatValue(dis);
+	}
 	
 	FVector newPos = GetActorLocation();
 	TArray<FHitResult> hitResults;

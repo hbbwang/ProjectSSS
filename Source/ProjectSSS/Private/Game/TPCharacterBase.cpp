@@ -18,6 +18,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Subsystem/TPWorldSubsystem.h"
 
+bool ATPCharacterBase::bBulletSpawnLineTraceDebug;
+
 // Sets default values
 ATPCharacterBase::ATPCharacterBase()
 {
@@ -562,7 +564,7 @@ void ATPCharacterBase::UpdateMovementSpeed()
 void ATPCharacterBase::GetBulletSpawnTransform(FVector& Pos,FVector& Dir)
 {
 	auto trans = CurrentWeapon->GetWeaponComp()->GetSocketTransform("Bullet");
-	FHitResult result;
+	FHitResult result,targetResult;
 	FCollisionObjectQueryParams objectQueryParams;
 	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
 	queryParams.AddIgnoredActor(this);
@@ -577,27 +579,57 @@ void ATPCharacterBase::GetBulletSpawnTransform(FVector& Pos,FVector& Dir)
 	objectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Vehicle);
 	
 	Dir = PlayerCameraComp->GetForwardVector();
-	bool bHit = GetWorld()->LineTraceSingleByObjectType(result,
-		trans.GetLocation(),
-		PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f,
+
+	FVector TargetPos = PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f;
+
+	//第二根射线确定着弹点
+	bool bTargetHit = GetWorld()->LineTraceSingleByObjectType(targetResult,
+		PlayerCameraComp->GetComponentLocation(),
+		TargetPos,
 		objectQueryParams , queryParams
 		);
-	if(bHit)
+	if(bTargetHit)
 	{
-		Dir = (result.Location - trans.GetLocation());
-		Dir.Normalize();
+		//
+		auto oldDir = TargetPos - trans.GetLocation();
+		oldDir.Normalize();
+		//
+		TargetPos = targetResult.Location;
+		auto newDir = TargetPos - trans.GetLocation();
+		newDir.Normalize();
+		//
+		if(oldDir.Dot(newDir)>0.5f)
+		{
+			Dir = newDir;
+		}
+
 	}
+	
+	// bool bHit = GetWorld()->LineTraceSingleByObjectType(result,
+	// 	trans.GetLocation(),
+	// 	PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f,
+	// 	objectQueryParams , queryParams
+	// 	);
+	// if(bHit)
+	// {
+	// 	Dir = (TargetPos - trans.GetLocation());
+	// 	Dir.Normalize();
+	// }
+	
 	trans.SetRotation(Dir.Rotation().Quaternion());
 	
 	Pos = trans.GetLocation();
 //
-// #if ENABLE_DRAW_DEBUG
-// 	DrawDebugLineTraceSingle(GetWorld(),
-// 		PlayerCameraComp->GetComponentLocation(),
-// 		PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f,
-// 		EDrawDebugTrace::Type::ForDuration,
-// 		bHit, result, FLinearColor::Red, FLinearColor::Green, 3.0f);
-// #endif
+#if WITH_EDITOR
+	if(bBulletSpawnLineTraceDebug)
+	{
+		DrawDebugLineTraceSingle(GetWorld(),
+        	PlayerCameraComp->GetComponentLocation(),
+        	PlayerCameraComp->GetComponentLocation() + PlayerCameraComp->GetForwardVector() * 1000000.0f,
+        	EDrawDebugTrace::Type::ForDuration,
+        	bTargetHit, result, FLinearColor::Red, FLinearColor::Green, 2.0f);
+	}
+#endif
 	
 }
 
@@ -625,6 +657,7 @@ void ATPCharacterBase::SpawnBullet(FVector Pos,FVector Dir)
 			bulletActor->GetProjectileMovementComponent()->InitialSpeed = CurrentWeapon->BulletSpeedInit * 100.0f;
 			bulletActor->BulletSizeChange = CurrentWeapon->BulletSizeChange;
 			bulletActor->BulletPower = CurrentWeapon->BulletPower * 0.01f;
+			bulletActor->DamageAttenuation = CurrentWeapon->DamageAttenuation;
 		};
 		GetWorld()->SpawnActor(CurrentWeapon->BulletClass,&SpawnTrans,spawnParameters);
 	}
@@ -719,6 +752,18 @@ void ATPCharacterBase::EnableBulletLineTraceDebug()
 	else
 	{
 		ATPBullet::bBulletLineTraceDebug = false;
+	}
+}
+
+void ATPCharacterBase::EnableBulletSpawnLineTraceDebug()
+{
+	if(!bBulletSpawnLineTraceDebug)
+	{
+		bBulletSpawnLineTraceDebug = true;
+	}
+	else
+	{
+		bBulletSpawnLineTraceDebug = false;
 	}
 }
 #endif

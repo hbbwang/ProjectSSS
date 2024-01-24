@@ -36,6 +36,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Bullet")
 	float BulletPower;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Bullet",meta=(ToolTip="子弹的伤害,和衰减曲线 (X=距离 / Y=伤害变化 ), 如果不设置,将默认基于30"))
+	UCurveFloat* DamageAttenuation;
 	
 	UFUNCTION(BlueprintCallable,Category="Component")
 	inline class UProjectileMovementComponent*GetProjectileMovementComponent()const
