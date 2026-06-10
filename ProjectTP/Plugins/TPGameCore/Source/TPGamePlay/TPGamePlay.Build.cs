@@ -18,7 +18,7 @@ public class TPGamePlay : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				
+				"EnhancedInput",
 			});
 		
 		DynamicallyLoadedModuleNames.AddRange(
