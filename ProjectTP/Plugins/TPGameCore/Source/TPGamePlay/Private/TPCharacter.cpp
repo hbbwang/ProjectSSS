@@ -2,6 +2,7 @@
 
 #include "TPCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
@@ -13,14 +14,23 @@ ATPCharacter::ATPCharacter()
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->TargetArmLength = 600.0f;
-	SpringArm->bUsePawnControlRotation = 1;
-	SpringArm->bInheritYaw = 1;
+	SpringArm->SetAbsolute(false, true,false);
+	SpringArm->SetWorldRotation(FRotator(-60.0f,0,0));
+	SpringArm->bInheritYaw = 0;
 	SpringArm->bInheritPitch = 0;
 	SpringArm->bInheritRoll = 0;
+	SpringArm->bDoCollisionTest = 0;
 	
 	PlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera"));
 	PlayerCamera->SetupAttachment(SpringArm);
+	PlayerCamera->FieldOfView = 60.0f;
+	PlayerCamera->bUsePawnControlRotation = 0;
 	
+	bUseControllerRotationYaw = 1;
+	bUseControllerRotationPitch = 0;
+	bUseControllerRotationRoll = 0;
+	
+
 }
 
 // Called when the game starts or when spawned

@@ -23,21 +23,27 @@ protected:
 	
 	void SetupInputComponent() override;
 	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPInput")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,Category="TPInput")
 	TObjectPtr<UInputMappingContext> InputMappingContext0;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,Category="TPInput")
+	TObjectPtr<UInputAction> Forward;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPInput")
-	TObjectPtr<UInputAction> ForwardAndBackward;
+	float ForwardAxis;
 	UFUNCTION()
-	void ActionFunc_ForwardAndBackward(const FInputActionValue& Value);
+	void ActionFunc_Forward(const FInputActionValue& Value);
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,Category="TPInput")
+	TObjectPtr<UInputAction> Rightward;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPInput")
-	TObjectPtr<UInputAction> RightwardAndLeftward;
+	float RightwardAxis;
 	UFUNCTION()
-	void ActionFunc_RightwardAndLeftward(const FInputActionValue& Value);
+	void ActionFunc_Rightward(const FInputActionValue& Value);
 	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPInput")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,Category="TPInput")
 	TObjectPtr<UInputAction> Look;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPInput")
+	FVector2D LookAxis;
 	UFUNCTION()
 	void ActionFunc_Look(const FInputActionValue& Value);
 
@@ -48,5 +54,15 @@ protected:
 	//刷新映射(修改了按键之后需要调用)
 	UFUNCTION(Blueprintable)
 	void RequestInputRebind();
+	
+public:
+	UFUNCTION(Blueprintable)
+	FVector2D GetLookAxis()const {return LookAxis;}
+	
+	UFUNCTION(Blueprintable)
+	float GetForwardAxis()const {return ForwardAxis;}
+	
+	UFUNCTION(Blueprintable)
+	float GetRightwardAxis()const {return RightwardAxis;}
 	
 };

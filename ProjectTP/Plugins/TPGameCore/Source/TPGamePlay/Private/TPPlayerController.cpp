@@ -26,40 +26,51 @@ void ATPPlayerController::SetupInputComponent()
 		}
 		if (auto EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 		{
-			EnhancedInputComponent->BindAction(ForwardAndBackward,ETriggerEvent::Triggered, this, &ATPPlayerController::ActionFunc_ForwardAndBackward);
-			EnhancedInputComponent->BindAction(RightwardAndLeftward,ETriggerEvent::Triggered, this, &ATPPlayerController::ActionFunc_RightwardAndLeftward);
+			EnhancedInputComponent->BindAction(Forward,ETriggerEvent::Triggered, this, &ATPPlayerController::ActionFunc_Forward);
+			EnhancedInputComponent->BindAction(Rightward,ETriggerEvent::Triggered, this, &ATPPlayerController::ActionFunc_Rightward);
 			EnhancedInputComponent->BindAction(Look,ETriggerEvent::Triggered, this, &ATPPlayerController::ActionFunc_Look);
 		}
 	}
 }
 
-void ATPPlayerController::ActionFunc_ForwardAndBackward(const FInputActionValue& Value)
+void ATPPlayerController::ActionFunc_Forward(const FInputActionValue& Value)
 {
 	const float Axis = Value.Get<float>();
 	if (ATPCharacter* TPCharacter = Cast<ATPCharacter>(GetPawn()))
 	{
+		ForwardAxis = Axis;
 		FVector MoveVector = TPCharacter->GetPlayerCamera()->GetForwardVector();
 		MoveVector = FVector(FVector2D(MoveVector),0);
 		MoveVector.Normalize();
 		TPCharacter->AddMovementInput(MoveVector, Axis);
 	}
+	else
+	{
+		ForwardAxis = 0;
+	}
 }
 
-void ATPPlayerController::ActionFunc_RightwardAndLeftward(const FInputActionValue& Value)
+void ATPPlayerController::ActionFunc_Rightward(const FInputActionValue& Value)
 {
 	const float Axis = Value.Get<float>();
 	if (ATPCharacter* TPCharacter = Cast<ATPCharacter>(GetPawn()))
 	{
+		RightwardAxis = Axis;
 		FVector MoveVector = TPCharacter->GetPlayerCamera()->GetRightVector();
 		MoveVector = FVector(FVector2D(MoveVector),0);
 		MoveVector.Normalize();
 		TPCharacter->AddMovementInput(MoveVector, Axis);
+	}
+	else
+	{
+		RightwardAxis = 0;
 	}
 }
 
 void ATPPlayerController::ActionFunc_Look(const FInputActionValue& Value)
 {
 	const FVector2D Axis = Value.Get<FVector2D>();
+	LookAxis = Axis;
 	AddYawInput(Axis.X);
 	AddPitchInput(Axis.Y);
 }
@@ -69,16 +80,22 @@ void ATPPlayerController::RebindActionKey(UInputMappingContext* MappingContext, 
 	if (MappingContext && Action && NewKey.IsValid())
 	{
 		auto & Mappings = MappingContext->GetMappings();
+		TArray<TObjectPtr<UInputModifier>> OldModifiers;
+		TArray<TObjectPtr<UInputTrigger>> OldTriggers;
 		//解除旧按键绑定
 		for (auto& m:Mappings)
 		{
 			if (m.Action == Action)
 			{
 				MappingContext->UnmapKey(Action, m.Key);
+				OldModifiers = m.Modifiers;
+				OldTriggers = m.Triggers;
 			}
 		}
 		//设置新的
-		MappingContext->MapKey(Action,NewKey);
+		FEnhancedActionKeyMapping& NewMapping = MappingContext->MapKey(Action,NewKey);
+		NewMapping.Modifiers = OldModifiers;
+		NewMapping.Triggers = OldTriggers;
 		MappingContext->Modify();
 	}
 }
