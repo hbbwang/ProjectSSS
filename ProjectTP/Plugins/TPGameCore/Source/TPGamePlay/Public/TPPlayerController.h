@@ -15,24 +15,38 @@ UCLASS()
 class TPGAMEPLAY_API ATPPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+public:
+	ATPPlayerController();
 	
 protected:
+	void BeginPlay() override;
+	
 	void SetupInputComponent() override;
 	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPGamePlay")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPInput")
 	TObjectPtr<UInputMappingContext> InputMappingContext0;
 	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPGamePlay")
-	TObjectPtr<UInputAction> Forward;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPInput")
+	TObjectPtr<UInputAction> ForwardAndBackward;
+	UFUNCTION()
+	void ActionFunc_ForwardAndBackward(const FInputActionValue& Value);
 	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPGamePlay")
-	TObjectPtr<UInputAction> Backward;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPInput")
+	TObjectPtr<UInputAction> RightwardAndLeftward;
+	UFUNCTION()
+	void ActionFunc_RightwardAndLeftward(const FInputActionValue& Value);
 	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPGamePlay")
-	TObjectPtr<UInputAction> Left;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPInput")
+	TObjectPtr<UInputAction> Look;
+	UFUNCTION()
+	void ActionFunc_Look(const FInputActionValue& Value);
+
+	//运行时修改按键
+	UFUNCTION(Blueprintable)
+	void RebindActionKey(UInputMappingContext* MappingContext, UInputAction* Action, FKey NewKey);
 	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly,Category="TPGamePlay")
-	TObjectPtr<UInputAction> Right;
+	//刷新映射(修改了按键之后需要调用)
+	UFUNCTION(Blueprintable)
+	void RequestInputRebind();
 	
-		
 };

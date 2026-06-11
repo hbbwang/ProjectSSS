@@ -25,5 +25,19 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
+protected:
+	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="TPCharacter")
+	TObjectPtr<class UCameraComponent> PlayerCamera;
+	
+	UPROPERTY(VisibleDefaultsOnly,BlueprintReadOnly,Category="TPCharacter")
+	TObjectPtr<class USpringArmComponent> SpringArm;
+	
+public:
+	UFUNCTION(Blueprintable)
+	class UCameraComponent* GetPlayerCamera()const {return PlayerCamera;}
+	
+	UFUNCTION(Blueprintable)
+	class USpringArmComponent* GetSpringArm()const {return SpringArm;}
+	
 };
