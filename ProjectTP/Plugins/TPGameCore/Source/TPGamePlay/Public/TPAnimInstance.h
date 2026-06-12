@@ -35,6 +35,9 @@ protected:
 	float Speed;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="TPAnim")
+	float SpeedScale;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="TPAnim")
 	FVector2D MovementAxis;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="TPAnim")

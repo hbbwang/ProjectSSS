@@ -19,7 +19,8 @@ public class TPGamePlay : ModuleRules
 			new string[]
 			{
 				"EnhancedInput",
-				"InputCore"
+				"InputCore",
+				"UnrealEd"
 			});
 		
 		DynamicallyLoadedModuleNames.AddRange(

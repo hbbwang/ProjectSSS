@@ -5,6 +5,7 @@
 
 #include "TPCharacter.h"
 #include "TPPlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -46,6 +47,8 @@ void UTPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	VelocityXY = FVector2D(Velocity.X, Velocity.Y);
 	
 	Speed = Velocity.Length();
+	
+	SpeedScale = Speed / TPCharacter->GetCharacterMovement()->MaxWalkSpeed;
 
 	MovementAxis = FVector2D(TPPlayerController->GetRightwardAxis(), TPPlayerController->GetForwardAxis());
 	

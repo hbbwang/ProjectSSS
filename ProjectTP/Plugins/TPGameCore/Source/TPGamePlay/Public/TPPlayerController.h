@@ -21,6 +21,8 @@ public:
 protected:
 	void BeginPlay() override;
 	
+	void Tick(float DeltaSeconds) override;
+	
 	void SetupInputComponent() override;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,Category="TPInput")

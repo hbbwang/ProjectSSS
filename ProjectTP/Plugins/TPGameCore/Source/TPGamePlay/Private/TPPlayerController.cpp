@@ -5,6 +5,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "TPCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ATPPlayerController::ATPPlayerController()
 {
@@ -13,6 +14,21 @@ ATPPlayerController::ATPPlayerController()
 void ATPPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ATPPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	
+	float MouseX = 0,MouseY = 0;
+	if (GetMousePosition(MouseX,MouseY))
+	{
+		FVector MouseWP,MouseWD;
+		if (UGameplayStatics::DeprojectScreenToWorld(this, FVector2D(MouseX,MouseY),MouseWP,MouseWD))
+		{
+			s
+		}
+	}
 }
 
 void ATPPlayerController::SetupInputComponent()
@@ -28,6 +44,8 @@ void ATPPlayerController::SetupInputComponent()
 		{
 			EnhancedInputComponent->BindAction(Forward,ETriggerEvent::Triggered, this, &ATPPlayerController::ActionFunc_Forward);
 			EnhancedInputComponent->BindAction(Rightward,ETriggerEvent::Triggered, this, &ATPPlayerController::ActionFunc_Rightward);
+			EnhancedInputComponent->BindAction(Forward,ETriggerEvent::Completed, this, &ATPPlayerController::ActionFunc_Forward);
+			EnhancedInputComponent->BindAction(Rightward,ETriggerEvent::Completed, this, &ATPPlayerController::ActionFunc_Rightward);
 			EnhancedInputComponent->BindAction(Look,ETriggerEvent::Triggered, this, &ATPPlayerController::ActionFunc_Look);
 		}
 	}
@@ -71,8 +89,8 @@ void ATPPlayerController::ActionFunc_Look(const FInputActionValue& Value)
 {
 	const FVector2D Axis = Value.Get<FVector2D>();
 	LookAxis = Axis;
-	AddYawInput(Axis.X);
-	AddPitchInput(Axis.Y);
+	// AddYawInput(Axis.X);
+	// AddPitchInput(Axis.Y);
 }
 
 void ATPPlayerController::RebindActionKey(UInputMappingContext* MappingContext, UInputAction* Action, FKey NewKey)
